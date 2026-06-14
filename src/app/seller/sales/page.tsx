@@ -6,7 +6,7 @@ import { won } from "@/utils/format";
 
 const sales = products.slice(0, 6).map((product, index) => {
   const grossAmount = product.currentPrice * product.currentParticipants;
-  const commissionRate = platformCommissionRate(grossAmount);
+  const commissionRate = product.type === "FREE_GIVEAWAY" ? 0 : platformCommissionRate(grossAmount);
   const settlement = calculateSettlement(grossAmount, commissionRate);
   const recentOrders = Math.max(1, Math.round(product.currentParticipants * 0.62));
 
@@ -17,7 +17,7 @@ const sales = products.slice(0, 6).map((product, index) => {
     commissionRate,
     settlement,
     recentOrders,
-    channel: product.type === "CLEARANCE" ? "재고떨이" : "일반 공동구매",
+    channel: product.type === "FREE_GIVEAWAY" ? "완전무료! 상품" : product.type === "CLEARANCE" ? "재고떨이" : "일반 공동구매",
   };
 });
 

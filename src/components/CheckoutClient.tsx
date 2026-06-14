@@ -15,13 +15,44 @@ type Props = {
 export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const [fulfillment, setFulfillment] = useState<"SHIPPING" | "PICKUP">(product.giveaway?.fulfillmentMethods[0] ?? "SHIPPING");
   const isSeller = viewerRole === "seller";
+  const isGiveaway = product.type === "FREE_GIVEAWAY";
+  const pickupDeposit = product.giveaway?.pickup?.deposit ?? 2000;
+  const totalAmount = isGiveaway
+    ? fulfillment === "PICKUP" ? pickupDeposit : product.giveaway?.shippingFee ?? 0
+    : product.currentPrice;
   const blocked = isSeller || !canParticipate;
 
   const pay = () => {
     setLoading(true);
-    setTimeout(() => router.push("/payment/success"), 1000);
+    setTimeout(() => {
+      if (isGiveaway) {
+        setLoading(false);
+        setCompleted(true);
+        return;
+      }
+      router.push("/payment/success");
+    }, 1000);
   };
+
+  if (completed && isGiveaway) {
+    return <div className="status-page"><div className="status-card">
+      <div className="status-icon">✓</div>
+      <span className="eyebrow">Free giveaway reserved</span>
+      <h1>완전무료! 상품 신청이 완료되었습니다.</h1>
+      {fulfillment === "PICKUP" ? <>
+        <p className="page-lead">매장에서 교환 코드 또는 QR을 보여주세요. 수령 완료 후 보증금 {won(pickupDeposit)}이 전액 반환됩니다.</p>
+        <div className="panel" style={{ margin:"22px 0" }}>
+          <span className="seller">교환 코드</span><h2 style={{ letterSpacing:4 }}>FREE-9K2A</h2>
+          <div style={{ width:140, height:140, margin:"18px auto 0", display:"grid", placeItems:"center", background:"repeating-conic-gradient(#111 0 25%, #fff 0 50%) 0 / 22px 22px", border:"10px solid white" }} aria-label="픽업 교환 QR 코드"/>
+          <p>{product.giveaway?.pickup?.storeName}<br/>{product.giveaway?.pickup?.address}</p>
+        </div>
+      </> : <p className="page-lead">택배비 {won(totalAmount)} 결제가 완료되었습니다. 공동구매 종료 후 발송됩니다.</p>}
+      <Link className="btn btn-primary" href="/mypage/orders">내 참여 내역</Link>
+    </div></div>;
+  }
 
   if (blocked) {
     return (
@@ -62,7 +93,7 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
     <div className="shell checkout">
       <div>
         <span className="eyebrow">Checkout</span>
-        <h1 className="page-title">공동구매 참여 확인</h1>
+        <h1 className="page-title">{isGiveaway ? "완전무료! 상품 신청" : "공동구매 참여 확인"}</h1>
         <div className="form-section">
           <h3>참여 상품</h3>
           <div className="order">
@@ -70,8 +101,10 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
               <span className="seller">{product.sellerName}</span>
               <h3>{product.name}</h3>
               <div className="price-line">
+                {isGiveaway ? <><span className="discount">완전무료!</span><strong>상품 가격 0원</strong></> : <>
                 <span className="discount">{discountRate(product)}%</span>
                 <strong>{won(product.currentPrice)}</strong>
+                </>}
               </div>
             </div>
             <div className={`product-visual ${product.visual}`} style={{ width: 120, height: 110, borderRadius: 14 }}>
@@ -79,6 +112,14 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
             </div>
           </div>
         </div>
+        {isGiveaway && product.giveaway && <div className="form-section">
+          <h3>수령 방법</h3>
+          <div className="reactions">
+            {product.giveaway.fulfillmentMethods.includes("SHIPPING") && <button type="button" className={`reaction ${fulfillment === "SHIPPING" ? "selected" : ""}`} onClick={()=>setFulfillment("SHIPPING")}>택배 · {won(product.giveaway?.shippingFee ?? 0)}</button>}
+            {product.giveaway.fulfillmentMethods.includes("PICKUP") && <button type="button" className={`reaction ${fulfillment === "PICKUP" ? "selected" : ""}`} onClick={()=>setFulfillment("PICKUP")}>가게 직접 픽업 · 보증금 {won(pickupDeposit)}</button>}
+          </div>
+          {fulfillment === "PICKUP" && product.giveaway.pickup && <div className="notice" style={{ marginTop:14 }}>{product.giveaway.pickup.storeName} · {product.giveaway.pickup.address}<br/>{product.giveaway.pickup.instructions}<br/>수령 확인 시 보증금은 전액 환불됩니다.</div>}
+        </div>}
         <div className="form-section">
           <h3>결제 수단</h3>
           <div className="reactions">
@@ -88,19 +129,29 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
           </div>
         </div>
         <div className="form-section">
-          <h3>자동 환불 안내</h3>
+          <h3>{isGiveaway ? "무료나눔 결제 안내" : "자동 환불 안내"}</h3>
           <div className="notice">
+            {isGiveaway ? <>
+              상품 가격과 사이트 수수료는 0원입니다.<br/>
+              {fulfillment === "PICKUP" ? `픽업 보증금 ${won(pickupDeposit)}은 수령 완료 후 전액 환불됩니다.` : "판매자가 등록한 택배비만 결제됩니다."}
+            </> : <>
             현재 가격으로 먼저 결제됩니다.<br />
             공동구매 종료 후 최종 가격이 더 낮아지면 차액은 자동 환불됩니다.<br />
             최소 참여 인원을 달성하지 못하면 결제 금액은 전액 환불됩니다.
+            </>}
           </div>
         </div>
       </div>
       <aside className="panel summary">
         <h3>결제 금액</h3>
-        <div className="summary-row"><span>정가</span><del>{won(product.originalPrice)}</del></div>
-        <div className="summary-row"><span>현재 공동구매 할인</span><b className="discount">-{won(product.originalPrice - product.currentPrice)}</b></div>
-        <div className="summary-row summary-total"><span>총 결제 금액</span><b>{won(product.currentPrice)}</b></div>
+        {isGiveaway ? <>
+          <div className="summary-row"><span>상품 가격</span><b>0원</b></div>
+          <div className="summary-row"><span>{fulfillment === "PICKUP" ? "환불형 픽업 보증금" : "택배비"}</span><b>{won(totalAmount)}</b></div>
+        </> : <>
+          <div className="summary-row"><span>정가</span><del>{won(product.originalPrice)}</del></div>
+          <div className="summary-row"><span>현재 공동구매 할인</span><b className="discount">-{won(product.originalPrice - product.currentPrice)}</b></div>
+        </>}
+        <div className="summary-row summary-total"><span>총 결제 금액</span><b>{won(totalAmount)}</b></div>
         <p className="page-lead">현재 참여 {product.currentParticipants} / 최대 {product.maxParticipants}명 · 1인 1개 구매</p>
         <button
           className="btn btn-brand"
@@ -108,7 +159,7 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
           onClick={pay}
           disabled={loading || !canParticipate}
         >
-          {loading ? "결제 처리 중..." : "현재가로 참여하고 결제하기"}
+          {loading ? "결제 처리 중..." : isGiveaway ? fulfillment === "PICKUP" ? "보증금 결제하고 픽업 예약하기" : "택배비 결제하고 신청하기" : "현재가로 참여하고 결제하기"}
         </button>
       </aside>
     </div>

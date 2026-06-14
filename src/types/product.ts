@@ -1,5 +1,19 @@
 export type ProductStatus = "SCHEDULED" | "OPEN" | "SOLD_OUT" | "CLOSED" | "FAILED";
-export type ProductType = "NORMAL" | "CLEARANCE";
+export type ProductType = "NORMAL" | "CLEARANCE" | "FREE_GIVEAWAY";
+export type FulfillmentMethod = "SHIPPING" | "PICKUP";
+
+export type GiveawayPolicy = {
+  reason: string;
+  promotionalPurpose: boolean;
+  fulfillmentMethods: FulfillmentMethod[];
+  shippingFee?: number;
+  pickup?: {
+    storeName: string;
+    address: string;
+    instructions: string;
+    deposit: 2000;
+  };
+};
 
 export type Product = {
   id: number;
@@ -21,9 +35,10 @@ export type Product = {
   remainingStock: number;
   endAt: string;
   couponEvent: boolean;
-  couponRate?: 3 | 5 | 10 | 15 | 30;
+  couponRate?: 3 | 5 | 10 | 15;
   visual: string;
   icon: string;
   rating: number;
   reviewCount: number;
+  giveaway?: GiveawayPolicy;
 };

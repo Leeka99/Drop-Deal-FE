@@ -10,7 +10,7 @@ export const platformCommissionRate = (grossAmount: number) =>
 
 export const calculateSettlement = (
   grossAmount: number,
-  commissionRate = platformCommissionRate(grossAmount),
+  commissionRate: number = platformCommissionRate(grossAmount),
   pgFeeRate = 0.03,
 ) => {
   const platformFee = Math.floor(grossAmount * commissionRate);

@@ -39,11 +39,19 @@ export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
       setProduct((prev) => {
         if (prev.status !== "OPEN" || prev.currentParticipants >= prev.maxParticipants) return prev;
         const participants = prev.currentParticipants + 1;
-        const startsDiscount = participants === prev.minParticipants;
+        const isClearance = prev.type === "CLEARANCE";
+        const isGiveaway = prev.type === "FREE_GIVEAWAY";
+        const startsDiscount = !isClearance && !isGiveaway && participants === prev.minParticipants;
         const shouldDrop =
-          participants > prev.minParticipants &&
-          (participants - prev.minParticipants) % prev.discountStepParticipants === 0;
-        const price = startsDiscount
+          isGiveaway
+            ? false
+            : isClearance
+            ? participants === prev.discountStepParticipants
+            : participants > prev.minParticipants &&
+              (participants - prev.minParticipants) % prev.discountStepParticipants === 0;
+        const price = isClearance
+          ? shouldDrop ? prev.minPrice : prev.currentPrice
+          : startsDiscount
           ? prev.startPrice
           : shouldDrop
             ? Math.max(prev.minPrice, prev.currentPrice - prev.discountStepAmount)
@@ -66,6 +74,7 @@ export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
   }, []);
 
   const isSeller = viewerRole === "seller";
+  const isGiveaway = product.type === "FREE_GIVEAWAY";
   const maxParticipantsReached = product.currentParticipants >= product.maxParticipants;
   const maxDiscountReached = product.currentPrice <= product.minPrice;
   const canParticipate = !isSeller && product.status === "OPEN" && !maxParticipantsReached;
@@ -73,12 +82,18 @@ export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
   const couponWinners = couponPolicy ? couponWinnerCount(product.currentParticipants, couponPolicy.winnerRate) : null;
   const rate = useMemo(() => discountRate(product), [product]);
 
-  const currentStep =
-    product.currentParticipants < product.minParticipants
+  const currentStep = product.type === "FREE_GIVEAWAY"
+    ? product.currentParticipants
+    : product.type === "CLEARANCE"
+    ? Math.min(product.currentParticipants, product.discountStepParticipants)
+    : product.currentParticipants < product.minParticipants
       ? product.currentParticipants
       : (product.currentParticipants - product.minParticipants) % product.discountStepParticipants;
-  const currentStepTarget =
-    product.currentParticipants < product.minParticipants
+  const currentStepTarget = product.type === "FREE_GIVEAWAY"
+    ? Math.max(1, product.maxParticipants)
+    : product.type === "CLEARANCE"
+    ? Math.max(1, product.discountStepParticipants)
+    : product.currentParticipants < product.minParticipants
       ? Math.max(1, product.minParticipants)
       : Math.max(1, product.discountStepParticipants);
   const progress = Math.min(100, (currentStep / currentStepTarget) * 100);
@@ -98,6 +113,7 @@ export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
         <div>
           <div className="badges" style={{ position: "static" }}>
             {product.type === "CLEARANCE" && <span className="badge badge-clear">재고떨이</span>}
+            {isGiveaway && <span className="badge badge-event">완전무료! 상품</span>}
             {product.couponEvent && product.couponRate && <span className="badge badge-event">{product.couponRate}% 쿠폰 이벤트</span>}
             <span className="badge badge-live">실시간 공동구매</span>
           </div>
@@ -107,12 +123,16 @@ export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
           <h1 className="detail-title">{product.name}</h1>
           <p className="page-lead">{product.description}</p>
           <div className="detail-price">
+            {isGiveaway ? (
+              <div className="price-line"><span className="discount">무료나눔</span><strong>상품 가격 0원</strong></div>
+            ) : <>
             <del className="original">{won(product.originalPrice)}</del>
             <div className="price-line">
               <span className="discount">{rate}%</span>
               <strong>{won(product.currentPrice)}</strong>
             </div>
             <span className="seller">최저 가능가 {won(product.minPrice)}</span>
+            </>}
           </div>
           <div className="detail-stat-grid">
             <div className="detail-stat"><span>현재 참여자</span><b>{product.currentParticipants} / {product.maxParticipants}명</b></div>
@@ -120,8 +140,22 @@ export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
             <div className="detail-stat"><span>마감까지</span><b>05:42:18</b></div>
           </div>
           <div className="notice">
-            먼저 참여해도 손해 보지 않습니다. 최종 가격이 더 내려가면 차액은 자동 환불됩니다.
+            {isGiveaway
+              ? "상품 가격과 사이트 수수료는 0원입니다. 택배는 택배비만 결제하며, 매장 픽업 보증금 2,000원은 수령 완료 시 전액 반환됩니다."
+              : "먼저 참여해도 손해 보지 않습니다. 최종 가격이 더 내려가면 차액은 자동 환불됩니다."}
           </div>
+          {isGiveaway && product.giveaway && (
+            <div className="panel" style={{ marginTop: 16 }}>
+              <h3>수령 방법</h3>
+              <p className="page-lead">{product.giveaway.reason}{product.giveaway.promotionalPurpose ? " · 가게 홍보 목적 포함" : ""}</p>
+              {product.giveaway.fulfillmentMethods.includes("SHIPPING") && <div className="summary-row"><span>택배 수령</span><b>택배비 {won(product.giveaway.shippingFee ?? 0)}</b></div>}
+              {product.giveaway.pickup && <>
+                <div className="summary-row"><span>매장 직접 픽업</span><b>보증금 {won(product.giveaway.pickup.deposit)} · 수령 후 환불</b></div>
+                <div className="summary-row"><span>픽업 장소</span><b>{product.giveaway.pickup.storeName} · {product.giveaway.pickup.address}</b></div>
+              </>}
+            </div>
+          )}
+          {!isGiveaway && (
           <div className="price-panel">
             <div className="price-next">
               <div>
@@ -130,14 +164,20 @@ export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
                 <b>{won(product.currentPrice)}</b>
               </div>
               <div style={{ textAlign: "right" }}>
-                <span className="seller">{maxDiscountReached ? "최대 할인 상태" : "다음 가격"}</span>
+                <span className="seller">{product.type === "CLEARANCE" ? maxDiscountReached ? "70% 할인 달성" : "70% 할인 도달가" : maxDiscountReached ? "최대 할인 상태" : "다음 가격"}</span>
                 <br />
-                <strong>{maxParticipantsReached ? "최대 할인 · 마감" : maxDiscountReached ? "최대 할인 적용 중" : won(nextPrice(product))}</strong>
+                <strong>{maxParticipantsReached ? "최대 할인 · 마감" : product.type === "CLEARANCE" ? maxDiscountReached ? "70% 할인 적용 중" : won(product.minPrice) : maxDiscountReached ? "최대 할인 적용 중" : won(nextPrice(product))}</strong>
               </div>
             </div>
             <b>
               {maxParticipantsReached
                 ? "최대 인원이 모두 참여해 마감되었습니다."
+                : product.type === "CLEARANCE" && product.currentParticipants < product.minParticipants
+                  ? `최소 주문 인원까지 ${product.minParticipants - product.currentParticipants}명 남았습니다.`
+                  : product.type === "CLEARANCE" && !maxDiscountReached
+                    ? `총 재고의 70% 참여까지 ${product.discountStepParticipants - product.currentParticipants}명 남았습니다.`
+                    : product.type === "CLEARANCE"
+                      ? "총 재고의 70%가 참여해 70% 할인이 적용됐습니다."
                 : maxDiscountReached
                   ? "지금이 기회! 최대 할인가로 참여하세요!"
                   : `${nextParticipants(product)}명만 더 참여하면 가격이 내려갑니다.`}
@@ -150,6 +190,7 @@ export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
               <span>최대 {product.maxParticipants}명</span>
             </div>
           </div>
+          )}
           {isSeller ? (
             <div className="notice" style={{ marginTop: 16 }}>
               판매자 계정은 상품을 구경할 수 있지만 구매는 할 수 없습니다.
@@ -160,7 +201,7 @@ export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
             </div>
           ) : canParticipate ? (
             <Link className="btn btn-brand" style={{ width: "100%", marginTop: 16, padding: 16 }} href={`/products/${product.id}/checkout`}>
-              {maxDiscountReached ? "최대 할인으로 지금 참여하기" : "현재가로 공동구매 참여하기"}
+              {isGiveaway ? "완전무료! 상품 신청하기" : maxDiscountReached ? "최대 할인으로 지금 참여하기" : "현재가로 공동구매 참여하기"}
             </Link>
           ) : (
             <button className="btn btn-brand" style={{ width: "100%", marginTop: 16, padding: 16 }} disabled>

@@ -17,6 +17,7 @@ export async function Header() {
         <div className="nav-links">
           <Link href="/products">공동구매</Link>
           <Link href="/products?type=clearance">재고떨이</Link>
+          <Link href="/products?type=free">완전무료!</Link>
           {isSeller ? <Link href="/seller/sales">판매 내역</Link> : <Link href="/mypage/orders">내 참여</Link>}
           {isSeller && <Link href="/seller/products">판매자 센터</Link>}
         </div>

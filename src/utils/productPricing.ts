@@ -6,8 +6,9 @@ export const MIN_ORIGINAL_PRICE = 100;
 const roundToHundred = (value: number) => Math.max(100, Math.round(value / 100) * 100);
 
 const discountPolicy: Record<ProductType, { startRate: number; maxRate: number }> = {
-  NORMAL: { startRate: 0.1, maxRate: 0.35 },
-  CLEARANCE: { startRate: 0.2, maxRate: 0.55 },
+  NORMAL: { startRate: 0.05, maxRate: 0.25 },
+  CLEARANCE: { startRate: 0.5, maxRate: 0.7 },
+  FREE_GIVEAWAY: { startRate: 1, maxRate: 1 },
 };
 
 const priceStepPolicyByStock = (stock: number) => {
@@ -34,20 +35,26 @@ export const calculateProductPricing = (
   const safeOriginalPrice = Math.max(MIN_ORIGINAL_PRICE, originalPrice);
   const safeStock = Math.max(MIN_GROUP_BUY_STOCK, stock);
   const policy = discountPolicy[type];
-  const { stepCount, stockRangeLabel } = priceStepPolicyByStock(safeStock);
+  const stepPolicy = priceStepPolicyByStock(safeStock);
+  const stepCount = type === "NORMAL" ? stepPolicy.stepCount : 0;
+  const stockRangeLabel = type === "CLEARANCE"
+    ? "재고떨이 50%·70% 할인"
+    : type === "FREE_GIVEAWAY"
+      ? "완전무료! 상품"
+      : stepPolicy.stockRangeLabel;
   const baseMinimumParticipationRate = minimumParticipationRateByStock(safeStock);
   const minimumParticipationRate = Math.max(
     0.1,
-    baseMinimumParticipationRate - (type === "CLEARANCE" ? 0.05 : 0),
+    type === "FREE_GIVEAWAY" ? 0 : baseMinimumParticipationRate - (type === "CLEARANCE" ? 0.05 : 0),
   );
-  const minParticipants = Math.ceil(safeStock * minimumParticipationRate);
-  const stepParticipants = Math.max(
-    1,
-    Math.ceil((safeStock - minParticipants) / stepCount),
-  );
-  const startPrice = roundToHundred(safeOriginalPrice * (1 - policy.startRate));
-  const minPrice = Math.min(startPrice, roundToHundred(safeOriginalPrice * (1 - policy.maxRate)));
-  const stepAmount = roundToHundred((startPrice - minPrice) / stepCount);
+  const minParticipants = type === "FREE_GIVEAWAY" ? 1 : Math.ceil(safeStock * minimumParticipationRate);
+  const clearanceDeepDiscountParticipants = Math.ceil(safeStock * 0.7);
+  const stepParticipants = stepCount === 0
+    ? clearanceDeepDiscountParticipants
+    : Math.max(1, Math.ceil((safeStock - minParticipants) / stepCount));
+  const startPrice = type === "FREE_GIVEAWAY" ? 0 : roundToHundred(safeOriginalPrice * (1 - policy.startRate));
+  const minPrice = type === "FREE_GIVEAWAY" ? 0 : Math.min(startPrice, roundToHundred(safeOriginalPrice * (1 - policy.maxRate)));
+  const stepAmount = stepCount === 0 ? 0 : roundToHundred((startPrice - minPrice) / stepCount);
 
   return {
     startPrice,
@@ -60,6 +67,7 @@ export const calculateProductPricing = (
     minParticipants,
     discountStartParticipants: minParticipants,
     minimumParticipationRate,
+    clearanceDeepDiscountParticipants,
     startDiscountRate: Math.round(policy.startRate * 100),
     maxDiscountRate: Math.round(policy.maxRate * 100),
   };
@@ -68,6 +76,7 @@ export const calculateProductPricing = (
 const baseSellThroughRate: Record<ProductType, number> = {
   NORMAL: 0.68,
   CLEARANCE: 0.82,
+  FREE_GIVEAWAY: 0.95,
 };
 
 export const calculateSalesForecast = ({
@@ -95,13 +104,19 @@ export const calculateSalesForecast = ({
     stock,
     Math.max(minParticipants, Math.round(stock * expectedSellThroughRate)),
   );
-  const reachedSteps = expectedParticipants < pricing.discountStartParticipants
+  const reachedSteps = pricing.stepCount === 0 || expectedParticipants < pricing.discountStartParticipants
     ? 0
     : Math.min(
       pricing.stepCount,
       Math.floor((expectedParticipants - pricing.discountStartParticipants) / pricing.stepParticipants),
     );
-  const expectedFinalPrice = expectedParticipants < pricing.discountStartParticipants
+  const expectedFinalPrice = type === "FREE_GIVEAWAY"
+    ? 0
+    : type === "CLEARANCE"
+    ? expectedParticipants >= pricing.clearanceDeepDiscountParticipants
+      ? pricing.minPrice
+      : pricing.startPrice
+    : expectedParticipants < pricing.discountStartParticipants
     ? originalPrice
     : Math.max(pricing.minPrice, pricing.startPrice - reachedSteps * pricing.stepAmount);
 
