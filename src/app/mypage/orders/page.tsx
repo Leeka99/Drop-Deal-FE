@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { products } from "@/mocks/products";
 import { won } from "@/utils/format";
@@ -18,6 +19,7 @@ export default async function OrdersPage() {
       <span className="eyebrow">My DropDeal</span>
       <h1 className="page-title">내 공동구매 참여 내역</h1>
       <p className="page-lead">가격 변화와 환불 진행 상태를 한눈에 확인하세요.</p>
+      <div className="hero-actions"><Link className="btn btn-soft" href="/mypage/profile">내 정보·배송지 관리</Link><Link className="btn btn-soft" href="/mypage/coupons">내 쿠폰함</Link></div>
       <div className="toolbar">
         <button className="filter active">전체</button>
         <button className="filter">진행 중</button>

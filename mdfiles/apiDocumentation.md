@@ -233,6 +233,7 @@ type ProductSummary = {
   currentParticipants: number;
   maxParticipants: number;
   remainingStock: number;
+  shippingFee: number;
   nextDiscountParticipants: number | null;
   nextPrice: number | null;
   startAt: string;
@@ -761,7 +762,8 @@ type ProductReview = {
     "currentPrice": 24000,
     "currentDiscountAmount": 8000,
     "quantity": 1,
-    "totalPaymentAmount": 24000,
+    "totalPaymentAmount": 27000,
+    "shippingFee": 3000,
     "currentParticipants": 27,
     "maxParticipants": 50,
     "remainingStock": 23,
@@ -786,8 +788,17 @@ type ProductReview = {
   "productId": 1,
   "quantity": 1,
   "paymentMethod": "CARD",
-  "expectedPaymentAmount": 24000,
+  "expectedPaymentAmount": 27000,
   "priceVersion": 18,
+  "shippingAddressId": 12,
+  "shippingAddress": {
+    "recipientName": "홍길동",
+    "phone": "010-0000-0000",
+    "postalCode": "04000",
+    "address": "서울시 마포구 월드컵로 10",
+    "detailAddress": "101호",
+    "deliveryMemo": "문 앞에 놓아주세요."
+  },
   "successUrl": "https://dropdealkr.com/payment/success",
   "failUrl": "https://dropdealkr.com/payment/fail"
 }
@@ -978,6 +989,61 @@ type UserCoupon = {
   sourceProductId: number | null;
 };
 ```
+
+## 12.1 내 정보 및 배송지 API
+
+### 내 정보 조회
+
+`GET /api/v1/me/profile`
+
+```ts
+type UserProfile = {
+  id: number;
+  email: string;
+  nickname: string;
+  phone: string;
+  defaultShippingAddressId: number | null;
+};
+```
+
+### 내 정보 수정
+
+`PUT /api/v1/me/profile`
+
+```json
+{
+  "nickname": "DropDeal 구매자",
+  "phone": "010-0000-0000"
+}
+```
+
+### 배송지 목록 조회
+
+`GET /api/v1/me/shipping-addresses`
+
+### 배송지 등록
+
+`POST /api/v1/me/shipping-addresses`
+
+```json
+{
+  "name": "집",
+  "recipientName": "홍길동",
+  "phone": "010-0000-0000",
+  "postalCode": "04000",
+  "address": "서울시 마포구 월드컵로 10",
+  "detailAddress": "101호",
+  "deliveryMemo": "문 앞에 놓아주세요.",
+  "isDefault": true
+}
+```
+
+### 배송지 수정 및 삭제
+
+- `PUT /api/v1/me/shipping-addresses/{addressId}`
+- `DELETE /api/v1/me/shipping-addresses/{addressId}`
+
+택배 주문에는 저장된 `shippingAddressId` 또는 직접 입력한 `shippingAddress`가 반드시 필요하다. 주문 생성 시 배송지 내용을 주문 스냅샷으로 저장하여 이후 배송지 수정의 영향을 받지 않게 한다.
 
 ## 13. 판매자 매출 API
 

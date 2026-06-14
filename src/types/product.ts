@@ -33,6 +33,7 @@ export type Product = {
   currentParticipants: number;
   maxParticipants: number;
   remainingStock: number;
+  shippingFee?: number;
   endAt: string;
   couponEvent: boolean;
   couponRate?: 3 | 5 | 10 | 15;
