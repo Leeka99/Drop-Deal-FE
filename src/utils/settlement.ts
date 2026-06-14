@@ -1,7 +1,6 @@
-import { ProductType } from "@/types/product";
+import { PLATFORM_COMMISSION_RATE } from "@/constants/productPolicy";
 
-export const commissionRateByType = (type: ProductType) =>
-  type === "CLEARANCE" ? 0.12 : 0.09;
+export const platformCommissionRate = () => PLATFORM_COMMISSION_RATE;
 
 export const calculateSettlement = (
   grossAmount: number,

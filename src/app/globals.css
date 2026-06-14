@@ -170,11 +170,30 @@ th { color: var(--muted); background: var(--soft); }
 .seller-side a { display: block; padding: 10px; border-radius: 9px; margin-bottom: 5px; font-size: 13px; font-weight: 700; }
 .seller-side a:hover { background: var(--accent); color: var(--ink); }
 .seller-content { padding: 40px; max-width: 1100px; }
+.type-policy-guide { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; margin-top: 28px; }
+.type-policy-card { position: relative; border: 2px solid var(--line); border-radius: 20px; background: var(--white); padding: 20px; color: var(--ink); text-align: left; transition: .2s; }
+.type-policy-card:hover { border-color: var(--brand); transform: translateY(-2px); }
+.type-policy-card.active { border-color: var(--accent); background: var(--cream); box-shadow: 0 10px 28px rgba(47,47,47,.1); }
+.type-policy-card strong { display: block; margin-bottom: 7px; font-size: 18px; }
+.type-policy-card p { margin: 0 0 14px; color: var(--ink); font-size: 12px; line-height: 1.6; }
+.type-policy-card ul { margin: 0; padding-left: 18px; color: var(--ink); font-size: 11px; line-height: 1.8; }
+.type-policy-check { position: absolute; right: 16px; top: 16px; border-radius: 99px; background: var(--brand-soft); padding: 5px 8px; font-size: 10px; font-weight: 900; }
+.type-policy-card.active .type-policy-check { background: var(--accent); }
+.selected-policy { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 22px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.selected-policy h3 { margin: 5px 0; }
+.selected-policy p { margin: 0; font-size: 12px; line-height: 1.6; }
+.fixed-fee { align-self: flex-start; min-width: 150px; border-radius: 14px; background: var(--accent); padding: 12px 14px; font-size: 11px; font-weight: 800; text-align: center; }
+.fixed-fee b { display: block; margin-top: 3px; font-size: 22px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .form-group { display: flex; flex-direction: column; gap: 7px; }
 .form-group label { font-size: 12px; font-weight: 800; }
 .form-group.full { grid-column: 1/-1; }
 .form-group textarea { min-height: 110px; resize: vertical; }
+.readonly-field { background: var(--brand-soft); font-weight: 800; }
+.policy-confirm { border: 1px solid var(--brand); border-radius: 14px; background: var(--brand-soft); padding: 14px; }
+.fixed-fee-field { display: flex; align-items: center; gap: 14px; border: 1px solid var(--accent); border-radius: 14px; background: var(--cream); padding: 14px; }
+.fixed-fee-field b { font-size: 24px; }
+.fixed-fee-field span { color: var(--ink); font-size: 11px; }
 .policy-preview { background: linear-gradient(145deg,var(--ink),var(--brand-dark)); color: var(--white); border-radius: 20px; padding: 22px; }
 .policy-step { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.1); font-size: 12px; }
 .estimate-box { margin-top: 25px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.18); }
@@ -215,6 +234,7 @@ th { color: var(--muted); background: var(--soft); }
 @media (max-width: 960px) {
   .product-grid { grid-template-columns: repeat(2,1fr); }
   .hero-grid, .detail-grid, .checkout, .content-grid, .settlement-detail-grid { grid-template-columns: 1fr; }
+  .type-policy-guide { grid-template-columns: 1fr; }
   .brand-hero-visual { min-height: 560px; }
   .detail-visual { min-height: 360px; position: relative; top: 0; }
   .summary { position: relative; top: 0; }
@@ -232,6 +252,7 @@ th { color: var(--muted); background: var(--soft); }
   .live-stage-overlay { left: 10px; right: 10px; bottom: 10px; padding: 14px; }
   .live-stage-overlay .stage-price strong { display: block; margin: 5px 0; font-size: 28px; }
   .trust-brand { align-items: flex-start; flex-direction: column; }
+  .selected-policy { flex-direction: column; }
   .product-grid, .steps, .coupon-grid, .form-grid, .settlement-stats { grid-template-columns: 1fr; }
   .trust, .section-head, .footer-inner { align-items: flex-start; flex-direction: column; }
   .detail-stat-grid { grid-template-columns: 1fr 1fr; }
