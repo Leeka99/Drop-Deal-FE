@@ -1,5 +1,8 @@
 import type { ProductType } from "@/types/product";
 
+export const MIN_GROUP_BUY_STOCK = 10;
+export const MIN_ORIGINAL_PRICE = 100;
+
 const roundToHundred = (value: number) => Math.max(100, Math.round(value / 100) * 100);
 
 const discountPolicy: Record<ProductType, { startRate: number; maxRate: number }> = {
@@ -28,8 +31,8 @@ export const calculateProductPricing = (
   originalPrice: number,
   stock: number,
 ) => {
-  const safeOriginalPrice = Math.max(100, originalPrice);
-  const safeStock = Math.max(1, stock);
+  const safeOriginalPrice = Math.max(MIN_ORIGINAL_PRICE, originalPrice);
+  const safeStock = Math.max(MIN_GROUP_BUY_STOCK, stock);
   const policy = discountPolicy[type];
   const { stepCount, stockRangeLabel } = priceStepPolicyByStock(safeStock);
   const baseMinimumParticipationRate = minimumParticipationRateByStock(safeStock);

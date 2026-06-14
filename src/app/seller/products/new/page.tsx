@@ -6,22 +6,24 @@ import { clearanceReasons, productTypePolicy } from "@/constants/productPolicy";
 import { ProductType } from "@/types/product";
 import { couponPolicies, couponWinnerCount, recommendCoupon } from "@/utils/couponPolicy";
 import { won } from "@/utils/format";
-import { calculateProductPricing, calculateSalesForecast } from "@/utils/productPricing";
+import { calculateProductPricing, calculateSalesForecast, MIN_GROUP_BUY_STOCK, MIN_ORIGINAL_PRICE } from "@/utils/productPricing";
 import { calculateSettlement, commissionTiers, platformCommissionRate } from "@/utils/settlement";
 
 export default function NewSellerProductPage() {
   const [type, setType] = useState<ProductType>("NORMAL");
-  const [values, setValues] = useState({ original:30000, stock:50 });
+  const [values, setValues] = useState({ original:"30000", stock:"50" });
   const [saved, setSaved] = useState(false);
   const [specialPromotion, setSpecialPromotion] = useState(false);
   const policy = productTypePolicy[type];
+  const originalPrice = Math.max(MIN_ORIGINAL_PRICE, Number(values.original) || MIN_ORIGINAL_PRICE);
+  const stock = Math.max(MIN_GROUP_BUY_STOCK, Number(values.stock) || MIN_GROUP_BUY_STOCK);
   const pricing = useMemo(
-    () => calculateProductPricing(type, values.original, values.stock),
-    [type, values.original, values.stock],
+    () => calculateProductPricing(type, originalPrice, stock),
+    [type, originalPrice, stock],
   );
   const steps = useMemo(() => {
     const allSteps = [
-      { people:0, price:values.original, label:"할인 시작 전" },
+      { people:0, price:originalPrice, label:"할인 시작 전" },
       { people:pricing.discountStartParticipants, price:pricing.startPrice, label:"첫 할인 시작" },
       ...Array.from(
         { length:pricing.stepCount },
@@ -34,19 +36,19 @@ export default function NewSellerProductPage() {
     ];
 
     return [...new Map(allSteps.map((step) => [step.people, step])).values()];
-  }, [pricing, values.original]);
+  }, [pricing, originalPrice]);
   const estimate = useMemo(() => {
     const forecast = calculateSalesForecast({
       type,
-      originalPrice: values.original,
-      stock: values.stock,
+      originalPrice,
+      stock,
       minParticipants: pricing.minParticipants,
       pricing,
     });
     const grossAmount = forecast.expectedGrossAmount;
     const commissionRate = platformCommissionRate(grossAmount);
     return { grossAmount, commissionRate, ...forecast, ...calculateSettlement(grossAmount, commissionRate) };
-  }, [pricing, type, values]);
+  }, [originalPrice, pricing, stock, type]);
   const couponRecommendation = useMemo(() => recommendCoupon({
     type,
     participationRate: estimate.expectedSellThroughRate,
@@ -59,8 +61,10 @@ export default function NewSellerProductPage() {
     : null;
   const commissionPercent = estimate.commissionRate * 100;
   const number = (key:keyof typeof values) => (event:React.ChangeEvent<HTMLInputElement>) => {
-    const value = Math.max(1, Number(event.target.value));
-    setValues((current) => ({ ...current, [key]:value }));
+    setValues((current) => ({ ...current, [key]:event.target.value }));
+  };
+  const normalizeNumber = (key:keyof typeof values, minimum:number) => () => {
+    setValues((current) => ({ ...current, [key]:String(Math.max(minimum, Number(current[key]) || minimum)) }));
   };
   const submit = (event:FormEvent) => {
     event.preventDefault();
@@ -102,8 +106,8 @@ export default function NewSellerProductPage() {
                 <div className="form-group"><label>고지 대상 상태</label><input className="field" placeholder="예: 유통기한 2026.08.30까지" required/></div>
                 <div className="form-group full policy-confirm"><label><input type="checkbox" required/> 재고 소진 사유와 상품 상태를 구매자에게 명확히 고지했음을 확인합니다.</label></div>
               </>}
-              <div className="form-group"><label>정가</label><input className="field" type="number" value={values.original} onChange={number("original")}/></div>
-              <div className="form-group"><label>총 재고 수량</label><input className="field" type="number" min="1" value={values.stock} onChange={number("stock")}/></div>
+              <div className="form-group"><label>정가</label><input className="field" type="number" min={MIN_ORIGINAL_PRICE} value={values.original} onChange={number("original")} onBlur={normalizeNumber("original", MIN_ORIGINAL_PRICE)}/><small className="auto-policy-help">입력 중에는 자유롭게 수정할 수 있으며 최소 정가는 {won(MIN_ORIGINAL_PRICE)}입니다.</small></div>
+              <div className="form-group"><label>총 재고 수량</label><input className="field" type="number" min={MIN_GROUP_BUY_STOCK} value={values.stock} onChange={number("stock")} onBlur={normalizeNumber("stock", MIN_GROUP_BUY_STOCK)}/><small className="auto-policy-help">공동구매 등록을 위한 최소 총 재고는 {MIN_GROUP_BUY_STOCK}개입니다.</small></div>
               <div className="form-group"><label>최소 참여 인원</label><input className="field readonly-field" value={`${pricing.minParticipants}명`} readOnly/><small className="auto-policy-help">총 재고와 상품 유형에 따라 자동 설정됩니다.</small></div>
               <div className="form-group"><label>가격 할인 시작 인원</label><input className="field readonly-field" value={`${pricing.discountStartParticipants}명`} readOnly/><small className="auto-policy-help">해당 인원 달성 전에는 정가를 유지하고, 달성 시 공동구매 시작가를 적용합니다.</small></div>
               <div className="form-group"><label>최대 참여 인원</label><input className="field readonly-field" value={`${pricing.maxParticipants}명`} readOnly/><small className="auto-policy-help">총 재고 수량과 동일하게 자동 설정됩니다.</small></div>
