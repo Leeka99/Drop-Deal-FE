@@ -9,6 +9,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=ffffff)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=ffffff)](https://tailwindcss.com/)
 
+**공식 서비스:** [dropdealkr.com](https://dropdealkr.com)
+
 ## 앱 소개
 
 **DropDeal**은 공동구매 참여자가 일정 인원에 도달할 때마다 상품 가격이 단계적으로 내려가는 커머스 서비스입니다.
@@ -245,41 +247,8 @@ src/
 | Data | Mock Data, Service Layer |
 | Code Quality | ESLint |
 | Deployment | Vercel |
+| Domain | [dropdealkr.com](https://dropdealkr.com) |
 | Planned Backend | Spring Boot, PG·파트너 정산 API |
-
-## 시작하기
-
-### 요구 사항
-
-- Node.js 20 이상
-- npm
-
-### 설치 및 실행
-
-```bash
-npm install
-npm run dev
-```
-
-브라우저에서 [http://localhost:3000](http://localhost:3000)에 접속합니다.
-
-### 주요 명령어
-
-```bash
-npm run dev     # 개발 서버 실행
-npm run build   # 프로덕션 빌드
-npm run start   # 프로덕션 서버 실행
-npm run lint    # ESLint 검사
-```
-
-## Vercel 배포
-
-이 프로젝트는 Next.js 기반이므로 Vercel 프로젝트 생성 시 **Framework Preset을 `Next.js`로 선택**합니다.
-
-1. GitHub 저장소를 Vercel에 연결합니다.
-2. Framework Preset이 `Next.js`인지 확인합니다.
-3. Build Command와 Output Directory는 기본값을 사용합니다.
-4. 배포를 실행합니다.
 
 ---
 
