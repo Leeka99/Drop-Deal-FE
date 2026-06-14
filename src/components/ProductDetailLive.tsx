@@ -41,6 +41,9 @@ export function ProductDetailLive({ initialProduct }: { initialProduct: Product 
   const progress = currentStep / product.discountStepParticipants * 100;
   const couponLeft = Math.max(0, 50 - product.currentParticipants);
   const rate = useMemo(() => discountRate(product), [product]);
+  const maxParticipantsReached = product.currentParticipants >= product.maxParticipants;
+  const maxDiscountReached = product.currentPrice <= product.minPrice;
+  const canParticipate = product.status === "OPEN" && !maxParticipantsReached;
 
   const react = (label: string, index: number) => {
     if (selected === label) return;
@@ -69,17 +72,19 @@ export function ProductDetailLive({ initialProduct }: { initialProduct: Product 
           </div>
           <div className="detail-stat-grid">
             <div className="detail-stat"><span>현재 참여자</span><b>{product.currentParticipants} / {product.maxParticipants}명</b></div>
-            <div className="detail-stat"><span>남은 재고</span><b>{product.remainingStock}개</b></div>
+            <div className="detail-stat"><span>최대 참여 인원</span><b>{product.maxParticipants}명</b></div>
             <div className="detail-stat"><span>마감까지</span><b>05:42:18</b></div>
           </div>
           <div className="notice">먼저 참여해도 손해 보지 않습니다. 최종 가격이 더 내려가면 차액은 자동 환불됩니다.</div>
           <div className="price-panel">
-            <div className="price-next"><div><span className="seller">현재 가격</span><br/><b>{won(product.currentPrice)}</b></div><div style={{ textAlign:"right" }}><span className="seller">다음 가격</span><br/><strong>{won(nextPrice(product))}</strong></div></div>
-            <b>{nextParticipants(product)}명만 더 참여하면 가격이 내려갑니다.</b>
+            <div className="price-next"><div><span className="seller">현재 가격</span><br/><b>{won(product.currentPrice)}</b></div><div style={{ textAlign:"right" }}><span className="seller">{maxDiscountReached ? "할인 상태" : "다음 가격"}</span><br/><strong>{maxParticipantsReached ? "최대 할인 · 마감" : maxDiscountReached ? "최대 할인 적용 중" : won(nextPrice(product))}</strong></div></div>
+            <b>{maxParticipantsReached ? "최대 인원이 모두 참여해 마감되었습니다." : maxDiscountReached ? "지금이 기회! 최대 할인가로 참여하세요!" : `${nextParticipants(product)}명만 더 참여하면 가격이 내려갑니다.`}</b>
             <div className="progress" style={{ height:10 }}><span style={{ width:`${progress}%` }} /></div>
-            <div className="metric"><span>현재 단계 {currentStep}명</span><span>{product.discountStepParticipants}명 달성 시 ↓ {won(product.discountStepAmount)}</span></div>
+            <div className="metric"><span>현재 참여 {product.currentParticipants}명</span><span>최대 {product.maxParticipants}명</span></div>
           </div>
-          <Link className="btn btn-brand" style={{ width:"100%", marginTop:16, padding:16 }} href={`/products/${product.id}/checkout`}>현재가로 공동구매 참여하기</Link>
+          {canParticipate
+            ? <Link className="btn btn-brand" style={{ width:"100%", marginTop:16, padding:16 }} href={`/products/${product.id}/checkout`}>{maxDiscountReached ? "최대 할인가로 지금 참여하기" : "현재가로 공동구매 참여하기"}</Link>
+            : <button className="btn btn-brand" style={{ width:"100%", marginTop:16, padding:16 }} disabled>최대 인원 도달 · 참여 마감</button>}
         </div>
       </div>
 

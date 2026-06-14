@@ -10,6 +10,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [loading,setLoading] = useState(false);
   const product = products.find((item)=>item.id === Number(params.id)) ?? products[0];
+  const canParticipate = product.status === "OPEN" && product.currentParticipants < product.maxParticipants;
   const pay = () => { setLoading(true); setTimeout(()=>router.push("/payment/success"),1000); };
   return (
     <div className="shell checkout">
@@ -24,8 +25,8 @@ export default function CheckoutPage() {
         <div className="summary-row"><span>정가</span><del>{won(product.originalPrice)}</del></div>
         <div className="summary-row"><span>현재 공동구매 할인</span><b className="discount">-{won(product.originalPrice-product.currentPrice)}</b></div>
         <div className="summary-row summary-total"><span>총 결제 금액</span><b>{won(product.currentPrice)}</b></div>
-        <p className="page-lead">현재 남은 재고 {product.remainingStock}개 · 1인 1개 구매</p>
-        <button className="btn btn-brand" style={{ width:"100%",marginTop:14,padding:16 }} onClick={pay} disabled={loading}>{loading ? "결제 처리 중..." : "현재가로 참여하고 결제하기"}</button>
+        <p className="page-lead">현재 참여 {product.currentParticipants} / 최대 {product.maxParticipants}명 · 1인 1개 구매</p>
+        <button className="btn btn-brand" style={{ width:"100%",marginTop:14,padding:16 }} onClick={pay} disabled={loading || !canParticipate}>{!canParticipate ? "최대 인원 도달 · 참여 마감" : loading ? "결제 처리 중..." : "현재가로 참여하고 결제하기"}</button>
       </aside>
     </div>
   );
