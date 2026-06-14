@@ -96,6 +96,12 @@ button { cursor: pointer; }
 .price-line strong { font-size: 21px; letter-spacing: -.8px; }
 .discount { color: var(--ink); font-weight: 900; text-decoration-color: var(--brand); text-decoration-thickness: 3px; }
 .original { color: var(--muted); font-size: 12px; }
+.card-next-price { display: flex; align-items: end; justify-content: space-between; gap: 10px; margin-top: 13px; border: 1px solid var(--brand); border-radius: 13px; background: var(--brand-soft); padding: 10px 11px; }
+.card-next-price div { min-width: 0; }
+.card-next-price span, .card-next-price small { display: block; color: var(--ink); font-size: 10px; font-weight: 800; }
+.card-next-price strong { display: block; margin-top: 3px; color: var(--ink); font-size: 16px; letter-spacing: -.5px; }
+.card-next-price small { flex-shrink: 0; color: var(--brand-dark); text-align: right; }
+.card-next-price.is-complete { border-color: var(--line); background: var(--cream); }
 .metric { display: flex; justify-content: space-between; margin-top: 12px; color: var(--muted); font-size: 11px; }
 .progress { height: 7px; border-radius: 99px; background: var(--brand-soft); overflow: hidden; margin-top: 7px; }
 .progress > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,var(--brand-dark),var(--brand),var(--accent)); }
