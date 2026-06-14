@@ -5,14 +5,17 @@ export type CouponRate = 3 | 5 | 10 | 15 | 30;
 export const couponPolicies: Record<CouponRate, {
   target: string;
   maxDiscountAmount: number;
-  issueLimit?: number;
+  winnerRate?: number;
 }> = {
   3: { target: "전체 공동구매 · 신규 참여 유도", maxDiscountAmount: 3_000 },
   5: { target: "참여율 70% 이상 · 재구매 유도", maxDiscountAmount: 5_000 },
   10: { target: "참여율 40~70% · 마감 임박 상품", maxDiscountAmount: 10_000 },
   15: { target: "참여율 40% 미만 · 재고떨이 상품", maxDiscountAmount: 15_000 },
-  30: { target: "승인된 특별 프로모션 상품", maxDiscountAmount: 10_000, issueLimit: 100 },
+  30: { target: "승인된 특별 프로모션 상품", maxDiscountAmount: 10_000, winnerRate: 0.05 },
 };
+
+export const couponWinnerCount = (participants: number, winnerRate?: number) =>
+  winnerRate ? Math.max(1, Math.floor(Math.max(0, participants) * winnerRate)) : null;
 
 export const recommendCoupon = ({
   type,

@@ -7,12 +7,20 @@ const discountPolicy: Record<ProductType, { startRate: number; maxRate: number }
   CLEARANCE: { startRate: 0.2, maxRate: 0.55 },
 };
 
-const priceStepCountByStock = (stock: number) => {
-  if (stock <= 30) return 3;
-  if (stock <= 60) return 5;
-  if (stock <= 100) return 7;
-  if (stock <= 200) return 9;
-  return 12;
+const priceStepPolicyByStock = (stock: number) => {
+  if (stock <= 30) return { stepCount: 3, stockRangeLabel: "총 재고 30개 이하" };
+  if (stock <= 60) return { stepCount: 5, stockRangeLabel: "총 재고 31~60개" };
+  if (stock <= 100) return { stepCount: 7, stockRangeLabel: "총 재고 61~100개" };
+  if (stock <= 200) return { stepCount: 9, stockRangeLabel: "총 재고 101~200개" };
+  return { stepCount: 12, stockRangeLabel: "총 재고 201개 이상" };
+};
+
+const minimumParticipationRateByStock = (stock: number) => {
+  if (stock <= 30) return 0.4;
+  if (stock <= 60) return 0.3;
+  if (stock <= 100) return 0.25;
+  if (stock <= 200) return 0.2;
+  return 0.15;
 };
 
 export const calculateProductPricing = (
@@ -23,8 +31,17 @@ export const calculateProductPricing = (
   const safeOriginalPrice = Math.max(100, originalPrice);
   const safeStock = Math.max(1, stock);
   const policy = discountPolicy[type];
-  const stepCount = priceStepCountByStock(safeStock);
-  const stepParticipants = Math.max(1, Math.ceil(safeStock / stepCount));
+  const { stepCount, stockRangeLabel } = priceStepPolicyByStock(safeStock);
+  const baseMinimumParticipationRate = minimumParticipationRateByStock(safeStock);
+  const minimumParticipationRate = Math.max(
+    0.1,
+    baseMinimumParticipationRate - (type === "CLEARANCE" ? 0.05 : 0),
+  );
+  const minParticipants = Math.ceil(safeStock * minimumParticipationRate);
+  const stepParticipants = Math.max(
+    1,
+    Math.ceil((safeStock - minParticipants) / stepCount),
+  );
   const startPrice = roundToHundred(safeOriginalPrice * (1 - policy.startRate));
   const minPrice = Math.min(startPrice, roundToHundred(safeOriginalPrice * (1 - policy.maxRate)));
   const stepAmount = roundToHundred((startPrice - minPrice) / stepCount);
@@ -36,6 +53,10 @@ export const calculateProductPricing = (
     stepAmount,
     maxParticipants: safeStock,
     stepCount,
+    stockRangeLabel,
+    minParticipants,
+    discountStartParticipants: minParticipants,
+    minimumParticipationRate,
     startDiscountRate: Math.round(policy.startRate * 100),
     maxDiscountRate: Math.round(policy.maxRate * 100),
   };
@@ -71,14 +92,15 @@ export const calculateSalesForecast = ({
     stock,
     Math.max(minParticipants, Math.round(stock * expectedSellThroughRate)),
   );
-  const reachedSteps = Math.min(
-    pricing.stepCount,
-    Math.floor(expectedParticipants / pricing.stepParticipants),
-  );
-  const expectedFinalPrice = Math.max(
-    pricing.minPrice,
-    pricing.startPrice - reachedSteps * pricing.stepAmount,
-  );
+  const reachedSteps = expectedParticipants < pricing.discountStartParticipants
+    ? 0
+    : Math.min(
+      pricing.stepCount,
+      Math.floor((expectedParticipants - pricing.discountStartParticipants) / pricing.stepParticipants),
+    );
+  const expectedFinalPrice = expectedParticipants < pricing.discountStartParticipants
+    ? originalPrice
+    : Math.max(pricing.minPrice, pricing.startPrice - reachedSteps * pricing.stepAmount);
 
   return {
     expectedParticipants,

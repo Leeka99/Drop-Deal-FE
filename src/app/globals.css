@@ -39,6 +39,8 @@ button { cursor: pointer; }
 .nav-links a { transition: color .2s; }
 .nav-links a:hover { color: var(--brand); }
 .nav-actions { margin-left: auto; display: flex; gap: 8px; }
+.nav-actions form { margin: 0; }
+.nav-user { align-self: center; color: var(--ink); font-size: 11px; font-weight: 800; }
 .btn { border: 0; border-radius: 12px; padding: 12px 18px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 7px; transition: transform .2s, box-shadow .2s, background .2s; }
 .btn:hover { transform: translateY(-1px); }
 .btn:disabled { cursor: not-allowed; opacity: .55; transform: none; box-shadow: none; }
@@ -158,6 +160,12 @@ button { cursor: pointer; }
 .summary-row { display: flex; justify-content: space-between; margin: 12px 0; font-size: 13px; }
 .summary-total { border-top: 1px solid var(--line); padding-top: 15px; font-size: 17px; font-weight: 900; }
 .status-page { min-height: 70vh; display: grid; place-items: center; padding: 45px 16px; }
+.auth-page { min-height: 75vh; display: grid; place-items: center; padding: 55px 16px; }
+.auth-card { width: min(440px, 100%); border: 1px solid var(--line); border-radius: 28px; background: var(--white); padding: 34px; box-shadow: 0 20px 55px rgba(47,47,47,.12); }
+.auth-card h1 { margin: 8px 0; font-size: 34px; letter-spacing: -1.5px; }
+.auth-form { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+.auth-alert { margin-top: 18px; border-radius: 12px; background: var(--brand-soft); padding: 12px; font-size: 12px; font-weight: 800; }
+.demo-accounts { display: flex; flex-direction: column; gap: 5px; margin-top: 22px; border-radius: 13px; background: var(--cream); padding: 14px; color: var(--ink); font-size: 10px; }
 .status-card { max-width: 540px; text-align: center; border: 1px solid var(--line); border-radius: 28px; background: var(--white); padding: 50px; }
 .status-icon { width: 70px; height: 70px; margin: auto; border-radius: 50%; display: grid; place-items: center; background: var(--accent); font-size: 32px; }
 .status-card h1 { font-size: 28px; letter-spacing: -1px; }
@@ -207,6 +215,9 @@ th { color: var(--muted); background: var(--soft); }
 .auto-policy-summary { border: 1px solid var(--accent); border-radius: 14px; background: var(--cream); padding: 14px; }
 .auto-policy-summary strong, .auto-policy-summary span { display: block; }
 .auto-policy-summary span { margin-top: 5px; color: var(--ink); font-size: 11px; line-height: 1.5; }
+.pricing-basis { border: 1px dashed var(--brand-dark); border-radius: 14px; background: var(--white); padding: 16px; }
+.pricing-basis strong { font-size: 14px; }
+.pricing-basis ul { margin: 0; padding-left: 18px; color: var(--ink); font-size: 11px; line-height: 1.8; }
 .policy-confirm { border: 1px solid var(--brand); border-radius: 14px; background: var(--brand-soft); padding: 14px; }
 .fixed-fee-field { display: flex; align-items: center; gap: 14px; border: 1px solid var(--accent); border-radius: 14px; background: var(--cream); padding: 14px; }
 .fixed-fee-field b { font-size: 24px; }

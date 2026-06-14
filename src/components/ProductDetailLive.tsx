@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Product } from "@/types/product";
-import { couponPolicies } from "@/utils/couponPolicy";
+import { couponPolicies, couponWinnerCount } from "@/utils/couponPolicy";
 import { discountRate, nextParticipants, nextPrice, won } from "@/utils/format";
 
 const reactionLabels = ["🔥 같이 사요", "💸 더 내려가자", "⏰ 마감 임박", "👀 고민 중", "🎉 가격 좋다", "📦 재고 털자"];
@@ -26,8 +26,9 @@ export function ProductDetailLive({ initialProduct }: { initialProduct: Product 
       setProduct((prev) => {
         if (prev.status !== "OPEN" || prev.currentParticipants >= prev.maxParticipants) return prev;
         const participants = prev.currentParticipants + 1;
-        const shouldDrop = participants % prev.discountStepParticipants === 0;
-        const price = shouldDrop ? Math.max(prev.minPrice, prev.currentPrice - prev.discountStepAmount) : prev.currentPrice;
+        const startsDiscount = participants === prev.minParticipants;
+        const shouldDrop = participants > prev.minParticipants && (participants - prev.minParticipants) % prev.discountStepParticipants === 0;
+        const price = startsDiscount ? prev.startPrice : shouldDrop ? Math.max(prev.minPrice, prev.currentPrice - prev.discountStepAmount) : prev.currentPrice;
         setFeeds((old) => [
           shouldDrop ? `현재 가격이 ${won(price)}으로 내려갔어요.` : "새로운 참여자가 공동구매에 참여했어요.",
           ...old.slice(0, 5),
@@ -38,14 +39,20 @@ export function ProductDetailLive({ initialProduct }: { initialProduct: Product 
     return () => clearInterval(timer);
   }, []);
 
-  const currentStep = product.currentParticipants % product.discountStepParticipants;
-  const progress = currentStep / product.discountStepParticipants * 100;
+  const currentStep = product.currentParticipants < product.minParticipants
+    ? product.currentParticipants
+    : (product.currentParticipants - product.minParticipants) % product.discountStepParticipants;
+  const currentStepTarget = product.currentParticipants < product.minParticipants
+    ? product.minParticipants
+    : product.discountStepParticipants;
+  const progress = currentStep / currentStepTarget * 100;
   const couponLeft = Math.max(0, 50 - product.currentParticipants);
   const rate = useMemo(() => discountRate(product), [product]);
   const maxParticipantsReached = product.currentParticipants >= product.maxParticipants;
   const maxDiscountReached = product.currentPrice <= product.minPrice;
   const canParticipate = product.status === "OPEN" && !maxParticipantsReached;
   const couponPolicy = product.couponRate ? couponPolicies[product.couponRate] : null;
+  const couponWinners = couponPolicy ? couponWinnerCount(product.currentParticipants, couponPolicy.winnerRate) : null;
 
   const react = (label: string, index: number) => {
     if (selected === label) return;
@@ -105,7 +112,7 @@ export function ProductDetailLive({ initialProduct }: { initialProduct: Product 
               </div>
             </div>
           </div>
-          {product.couponEvent && product.couponRate && couponPolicy && <div className="coupon-box" style={{ marginBottom:25 }}><span className="eyebrow">Coupon event</span><h3>공동구매 성공 시 {product.couponRate}% 할인 쿠폰 이벤트</h3><p>{couponPolicy.target} · 최대 {won(couponPolicy.maxDiscountAmount)} 할인{couponPolicy.issueLimit ? ` · ${couponPolicy.issueLimit}명 한정` : ""}. 쿠폰 이벤트 조건까지 <b>{couponLeft}명</b> 남았습니다.</p></div>}
+          {product.couponEvent && product.couponRate && couponPolicy && <div className="coupon-box" style={{ marginBottom:25 }}><span className="eyebrow">Coupon event</span><h3>공동구매 성공 시 {product.couponRate}% 할인 쿠폰 이벤트</h3><p>{couponPolicy.target} · 최대 {won(couponPolicy.maxDiscountAmount)} 할인{couponWinners ? ` · 현재 참여 기준 ${couponWinners}명 추첨` : ""}. 쿠폰 이벤트 조건까지 <b>{couponLeft}명</b> 남았습니다.</p></div>}
           <div className="content-grid">
             <div className="panel">
               <h3>판매자 Q&A</h3>

@@ -1,7 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
+import { logout } from "@/app/login/actions";
+import { getSession } from "@/lib/auth";
 
-export function Header() {
+export async function Header() {
+  const session = await getSession();
+
   return (
     <header className="header">
       <nav className="shell nav">
@@ -13,11 +17,15 @@ export function Header() {
           <Link href="/products">공동구매</Link>
           <Link href="/products?type=clearance">재고떨이</Link>
           <Link href="/mypage/orders">내 참여</Link>
-          <Link href="/seller/products">판매자 센터</Link>
+          {session?.role === "seller" && <Link href="/seller/products">판매자 센터</Link>}
         </div>
         <div className="nav-actions">
-          <Link className="btn btn-soft" href="/mypage/coupons">내 쿠폰</Link>
-          <Link className="btn btn-primary" href="/products">상품 구매하기</Link>
+          {session
+            ? <><span className="nav-user">{session.name}</span><form action={logout}><button className="btn btn-soft" type="submit">로그아웃</button></form></>
+            : <Link className="btn btn-soft" href="/login">로그인</Link>}
+          {session?.role === "seller"
+            ? <Link className="btn btn-primary" href="/seller/products">판매자 센터</Link>
+            : <Link className="btn btn-primary" href="/products">상품 구매하기</Link>}
         </div>
       </nav>
     </header>
