@@ -1,10 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import Image from "next/image";
 import { Header } from "@/components/Header";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "DropDeal | 모이면 가격이 내려갑니다",
   description: "참여자가 늘수록 모두의 가격이 내려가는 실시간 공동구매",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f6b1c1",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -16,7 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <footer className="footer">
           <div className="shell footer-inner">
             <div>
-              <strong>DropDeal</strong>
+              <div className="footer-brand"><span className="footer-brand-mark"><Image src="/brand/mainlogo.png" alt="" fill sizes="42px"/></span><strong>DropDeal</strong></div>
               <p>모이면 가격이 내려갑니다.</p>
               <p className="footer-credit">
                 © 2026 DropDeal. Created by{" "}

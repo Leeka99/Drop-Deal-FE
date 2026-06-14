@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ProductCard } from "@/components/ProductCard";
 import { productService } from "@/services/productService";
 
@@ -19,11 +20,14 @@ export default async function Home() {
               <Link className="btn btn-lime" href="/products?type=clearance">재고떨이 특가</Link>
             </div>
           </div>
-          <div className="live-stage">
-            <span className="live-chip"><i className="live-dot"/> LIVE PRICE DROP</span>
-            <div className="stage-price"><del>36,000원</del><strong>19,000원</strong><b>46명이 함께 가격을 내렸어요</b></div>
-            <div className="progress" style={{ marginTop:18, background:"rgba(255,255,255,.12)" }}><span style={{ width:"78%", background:"var(--lime)" }}/></div>
-            <div className="stage-ticker">방금 참여자가 늘어 현재 가격이 2,000원 내려갔어요 ↓</div>
+          <div className="brand-hero-visual">
+            <Image className="hero-brand-image" src="/brand/mainlogo2.png" alt="사람이 모일수록 가격이 내려가는 DropDeal 캐릭터" fill priority sizes="(max-width: 960px) 100vw, 46vw"/>
+            <div className="live-stage live-stage-overlay">
+              <span className="live-chip"><i className="live-dot"/> LIVE PRICE DROP</span>
+              <div className="stage-price"><del>36,000원</del><strong>19,000원</strong><b>46명이 함께 가격을 내렸어요</b></div>
+              <div className="progress" style={{ marginTop:18, background:"rgba(255,255,255,.12)" }}><span style={{ width:"78%", background:"var(--lime)" }}/></div>
+              <div className="stage-ticker">방금 참여자가 늘어 현재 가격이 2,000원 내려갔어요 ↓</div>
+            </div>
           </div>
         </div>
       </section>
@@ -52,7 +56,7 @@ export default async function Home() {
           </div>
         </div>
       </section>
-      <section className="section"><div className="shell trust"><div><h2>가격이 내려갈수록 환불 금액은 올라갑니다.</h2><p>공동구매 실패 시에는 결제 금액 전액을 자동 환불합니다.</p></div><Link className="btn btn-lime" href="/products">안심하고 참여하기</Link></div></section>
+      <section className="section"><div className="shell trust"><div className="trust-brand"><Image src="/brand/mainlogo.png" alt="쇼핑 카트와 가격 하락 화살표를 든 DropDeal 캐릭터" width={126} height={126}/><div><h2>가격이 내려갈수록 환불 금액은 올라갑니다.</h2><p>공동구매 실패 시에는 결제 금액 전액을 자동 환불합니다.</p></div></div><Link className="btn btn-lime" href="/products">안심하고 참여하기</Link></div></section>
     </>
   );
 }
