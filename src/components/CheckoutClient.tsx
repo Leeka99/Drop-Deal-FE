@@ -25,7 +25,10 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
     detailAddress: "",
     deliveryMemo: "",
   });
+  const [addressMode, setAddressMode] = useState<"NONE" | "DEFAULT" | "NEW">("NONE");
+  const [addressMessage, setAddressMessage] = useState("");
   const isSeller = viewerRole === "seller";
+  const isGuest = viewerRole === undefined;
   const isGiveaway = product.type === "FREE_GIVEAWAY";
   const pickupDeposit = product.giveaway?.pickup?.deposit ?? 2000;
   const shippingFee = isGiveaway ? product.giveaway?.shippingFee ?? 0 : product.shippingFee ?? 3000;
@@ -37,13 +40,33 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
     shippingAddress.address.trim() &&
     shippingAddress.detailAddress.trim()
   );
+  const guestIdentityComplete = !isGuest || (
+    shippingAddress.recipientName.trim() &&
+    shippingAddress.phone.trim()
+  );
   const totalAmount = isGiveaway
     ? fulfillment === "PICKUP" ? pickupDeposit : shippingFee
     : product.currentPrice + shippingFee;
   const blocked = isSeller || !canParticipate;
 
   const pay = () => {
-    if (!shippingAddressComplete) return;
+    if (!shippingAddressComplete || !guestIdentityComplete) return;
+    if (isGuest) {
+      const guestOrder = {
+        id: `DD-GUEST-${Date.now()}`,
+        name: shippingAddress.recipientName,
+        phone: shippingAddress.phone,
+        productName: product.name,
+        paid: totalAmount,
+        state: isGiveaway ? "신청 완료" : "공동구매 진행 중",
+      };
+      try {
+        const savedOrders = JSON.parse(localStorage.getItem("dropdeal_guest_orders") ?? "[]");
+        localStorage.setItem("dropdeal_guest_orders", JSON.stringify([guestOrder, ...savedOrders]));
+      } catch {
+        localStorage.setItem("dropdeal_guest_orders", JSON.stringify([guestOrder]));
+      }
+    }
     setLoading(true);
     setTimeout(() => {
       if (isGiveaway) {
@@ -57,7 +80,11 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
 
   const loadDefaultAddress = () => {
     const savedProfile = localStorage.getItem("dropdeal_profile");
-    if (!savedProfile) return;
+    if (!savedProfile) {
+      setAddressMode("NEW");
+      setAddressMessage("저장된 기본 배송지가 없습니다. 새 배송지를 입력해주세요.");
+      return;
+    }
     try {
       const profile = JSON.parse(savedProfile) as Partial<typeof shippingAddress> & { phone?: string };
       setShippingAddress((current) => ({
@@ -69,9 +96,26 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
         detailAddress: profile.detailAddress ?? current.detailAddress,
         deliveryMemo: profile.deliveryMemo ?? current.deliveryMemo,
       }));
+      setAddressMode("DEFAULT");
+      setAddressMessage("기본 배송지를 불러왔습니다. 이번 주문에서 자유롭게 수정할 수 있습니다.");
     } catch {
       localStorage.removeItem("dropdeal_profile");
+      setAddressMode("NEW");
+      setAddressMessage("기본 배송지를 불러오지 못했습니다. 새 배송지를 입력해주세요.");
     }
+  };
+
+  const useNewAddress = () => {
+    setShippingAddress({
+      recipientName: "",
+      phone: "",
+      postalCode: "",
+      address: "",
+      detailAddress: "",
+      deliveryMemo: "",
+    });
+    setAddressMode("NEW");
+    setAddressMessage("새 배송지를 입력해주세요. 입력한 주소는 이번 주문에만 적용됩니다.");
   };
 
   if (completed && isGiveaway) {
@@ -159,9 +203,15 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
         </div>}
         {needsShippingAddress && <div className="form-section">
           <div className="section-head" style={{ marginBottom: 14 }}>
-            <h3 style={{ margin: 0 }}>배송 정보</h3>
-            <button className="btn btn-soft" type="button" onClick={loadDefaultAddress}>기본 배송지 불러오기</button>
+            <h3 style={{ margin: 0 }}>{isGuest ? "비회원 배송 정보" : "배송 정보"}</h3>
           </div>
+          {isGuest && <div className="notice" style={{ marginBottom: 14 }}>입력한 주소는 이번 주문의 배송에만 사용되며 회원 배송지로 저장되지 않습니다.</div>}
+          {!isGuest && <div className="reactions" style={{ marginBottom: 14 }}>
+            <button className={`reaction ${addressMode === "DEFAULT" ? "selected" : ""}`} type="button" onClick={loadDefaultAddress}>기본 배송지 사용</button>
+            <button className={`reaction ${addressMode === "NEW" ? "selected" : ""}`} type="button" onClick={useNewAddress}>새 배송지 입력</button>
+          </div>}
+          {!isGuest && addressMode === "NONE" && <div className="notice" style={{ marginBottom: 14 }}>로그인 여부와 관계없이 배송지는 자동 적용되지 않습니다. 사용할 배송지를 선택해주세요.</div>}
+          {!isGuest && addressMessage && <div className="notice" style={{ marginBottom: 14 }}>{addressMessage}</div>}
           <div className="form-grid">
             <div className="form-group"><label>받는 분</label><input className="field" value={shippingAddress.recipientName} onChange={(event)=>setShippingAddress((current)=>({...current, recipientName:event.target.value}))} placeholder="이름" required/></div>
             <div className="form-group"><label>연락처</label><input className="field" value={shippingAddress.phone} onChange={(event)=>setShippingAddress((current)=>({...current, phone:event.target.value}))} placeholder="010-0000-0000" required/></div>
@@ -169,6 +219,14 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
             <div className="form-group"><label>기본 주소</label><input className="field" value={shippingAddress.address} onChange={(event)=>setShippingAddress((current)=>({...current, address:event.target.value}))} placeholder="도로명 주소" required/></div>
             <div className="form-group full"><label>상세 주소</label><input className="field" value={shippingAddress.detailAddress} onChange={(event)=>setShippingAddress((current)=>({...current, detailAddress:event.target.value}))} placeholder="동·호수 또는 상세 위치" required/></div>
             <div className="form-group full"><label>배송 메모</label><input className="field" value={shippingAddress.deliveryMemo} onChange={(event)=>setShippingAddress((current)=>({...current, deliveryMemo:event.target.value}))} placeholder="배송 요청사항을 입력하세요"/></div>
+          </div>
+        </div>}
+        {isGuest && !needsShippingAddress && <div className="form-section">
+          <h3>비회원 주문 인증 정보</h3>
+          <div className="notice" style={{ marginBottom: 14 }}>비회원 참여 내역을 조회할 때 입력한 이름과 휴대폰 번호가 필요합니다.</div>
+          <div className="form-grid">
+            <div className="form-group"><label>이름</label><input className="field" value={shippingAddress.recipientName} onChange={(event)=>setShippingAddress((current)=>({...current, recipientName:event.target.value}))} required/></div>
+            <div className="form-group"><label>휴대폰 번호</label><input className="field" type="tel" value={shippingAddress.phone} onChange={(event)=>setShippingAddress((current)=>({...current, phone:event.target.value}))} placeholder="010-0000-0000" required/></div>
           </div>
         </div>}
         <div className="form-section">
@@ -209,9 +267,9 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
           className="btn btn-brand"
           style={{ width: "100%", marginTop: 14, padding: 16 }}
           onClick={pay}
-          disabled={loading || !canParticipate || !shippingAddressComplete}
+          disabled={loading || !canParticipate || !shippingAddressComplete || !guestIdentityComplete}
         >
-          {loading ? "결제 처리 중..." : isGiveaway ? fulfillment === "PICKUP" ? "보증금 결제하고 픽업 예약하기" : "택배비 결제하고 신청하기" : "현재가로 참여하고 결제하기"}
+          {loading ? "결제 처리 중..." : isGiveaway ? fulfillment === "PICKUP" ? "보증금 결제하고 픽업 예약하기" : "택배비 결제하고 신청하기" : isGuest ? "비회원으로 현재가 결제하기" : "현재가로 참여하고 결제하기"}
         </button>
       </aside>
     </div>

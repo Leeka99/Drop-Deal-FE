@@ -8,11 +8,13 @@ import { couponPolicies, couponWinnerCount, recommendCoupon } from "@/utils/coup
 import { won } from "@/utils/format";
 import { calculateProductPricing, calculateSalesForecast, MIN_GROUP_BUY_STOCK, MIN_ORIGINAL_PRICE } from "@/utils/productPricing";
 import { calculateSettlement, commissionTiers, platformCommissionRate } from "@/utils/settlement";
+import { findProhibitedWord } from "@/utils/prohibitedText";
 
 export default function NewSellerProductPage() {
   const [type, setType] = useState<ProductType>("NORMAL");
   const [values, setValues] = useState({ original:"30000", stock:"50" });
   const [saved, setSaved] = useState(false);
+  const [contentError, setContentError] = useState("");
   const [giveawayFulfillment, setGiveawayFulfillment] = useState({ shipping:true, pickup:true });
   const policy = productTypePolicy[type];
   const originalPrice = Math.max(MIN_ORIGINAL_PRICE, Number(values.original) || MIN_ORIGINAL_PRICE);
@@ -80,8 +82,20 @@ export default function NewSellerProductPage() {
   const normalizeNumber = (key:keyof typeof values, minimum:number) => () => {
     setValues((current) => ({ ...current, [key]:String(Math.max(minimum, Number(current[key]) || minimum)) }));
   };
-  const submit = (event:FormEvent) => {
+  const submit = (event:FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const fields = Array.from(event.currentTarget.elements)
+      .filter((element): element is HTMLInputElement | HTMLTextAreaElement =>
+        element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement,
+      )
+      .filter((element) => !["checkbox", "number"].includes(element.type))
+      .map((element) => element.value);
+    if (findProhibitedWord(fields)) {
+      setSaved(false);
+      setContentError("상품 정보에 비속어, 운영진 사칭 등 사용할 수 없는 단어가 포함되어 있습니다.");
+      return;
+    }
+    setContentError("");
     setSaved(true);
   };
 
@@ -114,6 +128,11 @@ export default function NewSellerProductPage() {
               <div className="form-group full hold-notice">
                 <b>등록 금지 품목 안내</b>
                 <span>마약류, 주류, 담배, 청소년 유해제품, 불법 의약품, 무기류, 도난품, 위조품, 권리 침해 상품, 안전 기준 미충족 상품, 개인정보가 포함된 물품 및 그 밖에 법령·행정명령·플랫폼 정책상 거래나 무료 제공이 금지 또는 제한된 품목은 등록할 수 없습니다.</span>
+              </div>
+              <div className="form-group full hold-notice">
+                <b>등록 문구 안내</b>
+                <span>상품명, 설명, 판매자명, 픽업 안내 등 모든 입력 항목에 비속어, 운영진 사칭 및 플랫폼 금칙어를 사용할 수 없습니다.</span>
+                {contentError && <strong>{contentError}</strong>}
               </div>
               <div className="form-group full"><label>상품명</label><input className="field" placeholder="상품명을 입력하세요" required/></div>
               <div className="form-group full"><label>상품 설명</label><textarea className="field" placeholder="상품과 공동구매를 소개해주세요."/></div>

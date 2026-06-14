@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
+import { GuestOrdersClient } from "@/components/GuestOrdersClient";
 import { products } from "@/mocks/products";
 import { won } from "@/utils/format";
 
@@ -13,6 +14,9 @@ const orders = [
 export default async function OrdersPage() {
   const session = await getSession();
   if (session?.role === "seller") redirect("/seller/sales");
+  if (!session) {
+    return <div className="shell section"><GuestOrdersClient /></div>;
+  }
 
   return (
     <div className="shell section">

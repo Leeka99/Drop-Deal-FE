@@ -1,9 +1,10 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { findProhibitedWord } from "@/utils/prohibitedText";
 
 const initialProfile = {
-  nickname: "DropDeal 구매자",
+  nickname: "나눔구매자",
   phone: "",
   recipientName: "",
   postalCode: "",
@@ -12,21 +13,69 @@ const initialProfile = {
   deliveryMemo: "",
 };
 
+const unavailableNicknames = new Set([
+  "관리자",
+  "운영자",
+  "DropDeal",
+  "구매자 데모",
+  "승인 판매자 데모",
+]);
+
 export default function MyProfilePage() {
   const [profile, setProfile] = useState(initialProfile);
   const [saved, setSaved] = useState(false);
+  const [checkedNickname, setCheckedNickname] = useState("");
+  const [nicknameMessage, setNicknameMessage] = useState("닉네임 저장 전 중복 확인이 필요합니다.");
 
   const field = (key: keyof typeof profile) => (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setSaved(false);
+    if (key === "nickname") {
+      setCheckedNickname("");
+      setNicknameMessage("닉네임이 변경되었습니다. 중복 확인을 다시 진행해주세요.");
+    }
     setProfile((current) => ({ ...current, [key]: event.target.value }));
   };
 
   const save = (event: FormEvent) => {
     event.preventDefault();
+    if (findProhibitedWord(Object.values(profile))) {
+      setNicknameMessage("입력한 정보에 비속어, 운영진 사칭 등 사용할 수 없는 단어가 포함되어 있습니다.");
+      return;
+    }
+    if (checkedNickname !== profile.nickname.trim()) {
+      setNicknameMessage("닉네임 중복 확인을 완료해야 저장할 수 있습니다.");
+      return;
+    }
     localStorage.setItem("dropdeal_profile", JSON.stringify(profile));
     setSaved(true);
+  };
+
+  const checkNickname = () => {
+    const nickname = profile.nickname.trim();
+
+    if (!nickname) {
+      setCheckedNickname("");
+      setNicknameMessage("닉네임을 입력해주세요.");
+      return;
+    }
+
+    if (findProhibitedWord([nickname])) {
+      setCheckedNickname("");
+      setNicknameMessage("비속어, 운영진 사칭 등 사용할 수 없는 단어가 포함되어 있습니다.");
+      return;
+    }
+
+    if (unavailableNicknames.has(nickname)) {
+      setCheckedNickname("");
+      setNicknameMessage("이미 사용 중이거나 사용할 수 없는 닉네임입니다.");
+      return;
+    }
+
+    setProfile((current) => ({ ...current, nickname }));
+    setCheckedNickname(nickname);
+    setNicknameMessage("사용 가능한 닉네임입니다.");
   };
 
   const load = () => {
@@ -34,6 +83,8 @@ export default function MyProfilePage() {
     if (!savedProfile) return;
     try {
       setProfile({ ...initialProfile, ...JSON.parse(savedProfile) });
+      setCheckedNickname("");
+      setNicknameMessage("저장된 닉네임을 사용하려면 중복 확인을 다시 진행해주세요.");
       setSaved(true);
     } catch {
       localStorage.removeItem("dropdeal_profile");
@@ -53,7 +104,12 @@ export default function MyProfilePage() {
           <div className="form-grid">
             <div className="form-group full">
               <label>닉네임</label>
-              <input className="field" value={profile.nickname} onChange={field("nickname")} maxLength={30} required />
+              <div className="nickname-check-row">
+                <input className="field" value={profile.nickname} onChange={field("nickname")} required />
+                <button className="btn btn-soft" type="button" onClick={checkNickname}>중복 확인</button>
+              </div>
+              <small className="auto-policy-help">{nicknameMessage}</small>
+              <small className="auto-policy-help">문자 종류와 길이 제한은 없으며, 중복 닉네임과 금칙어만 사용할 수 없습니다.</small>
             </div>
             <div className="form-group full">
               <label>연락처</label>
@@ -86,7 +142,7 @@ export default function MyProfilePage() {
               <input className="field" value={profile.deliveryMemo} onChange={field("deliveryMemo")} placeholder="문 앞에 놓아주세요." />
             </div>
           </div>
-          <button className="btn btn-primary" style={{ width: "100%", marginTop: 18 }} type="submit">
+          <button className="btn btn-primary" style={{ width: "100%", marginTop: 18 }} type="submit" disabled={checkedNickname !== profile.nickname.trim()}>
             {saved ? "저장 완료" : "내 정보와 배송지 저장하기"}
           </button>
         </div>
