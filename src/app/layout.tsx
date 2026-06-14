@@ -1,21 +1,38 @@
 import type { Metadata, Viewport } from "next";
 import Image from "next/image";
 import { Header } from "@/components/Header";
+import { PwaRegister } from "@/components/PwaRegister";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://dropdealkr.com"),
+  applicationName: "DropDeal",
   title: "DropDeal | 모이면 가격이 내려갑니다",
   description: "참여자가 늘수록 모두의 가격이 내려가는 실시간 공동구매",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "DropDeal",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#f6b1c1",
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
       <body>
+        <PwaRegister />
         <Header />
         <main>{children}</main>
         <footer className="footer">
