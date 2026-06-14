@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { guestOrderService } from "@/services/guestOrderService";
+import { profileService } from "@/services/profileService";
 import { Product } from "@/types/product";
 import { discountRate, won } from "@/utils/format";
 
@@ -60,12 +62,7 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
         paid: totalAmount,
         state: isGiveaway ? "신청 완료" : "공동구매 진행 중",
       };
-      try {
-        const savedOrders = JSON.parse(localStorage.getItem("dropdeal_guest_orders") ?? "[]");
-        localStorage.setItem("dropdeal_guest_orders", JSON.stringify([guestOrder, ...savedOrders]));
-      } catch {
-        localStorage.setItem("dropdeal_guest_orders", JSON.stringify([guestOrder]));
-      }
+      void guestOrderService.create(guestOrder);
     }
     setLoading(true);
     setTimeout(() => {
@@ -79,30 +76,27 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
   };
 
   const loadDefaultAddress = () => {
-    const savedProfile = localStorage.getItem("dropdeal_profile");
-    if (!savedProfile) {
-      setAddressMode("NEW");
-      setAddressMessage("저장된 기본 배송지가 없습니다. 새 배송지를 입력해주세요.");
-      return;
-    }
-    try {
-      const profile = JSON.parse(savedProfile) as Partial<typeof shippingAddress> & { phone?: string };
+    void profileService.getDefaultShippingAddress().then((profile) => {
+      if (!profile) {
+        setAddressMode("NEW");
+        setAddressMessage("저장된 기본 배송지가 없습니다. 새 배송지를 입력해주세요.");
+        return;
+      }
       setShippingAddress((current) => ({
         ...current,
-        recipientName: profile.recipientName ?? current.recipientName,
-        phone: profile.phone ?? current.phone,
-        postalCode: profile.postalCode ?? current.postalCode,
-        address: profile.address ?? current.address,
-        detailAddress: profile.detailAddress ?? current.detailAddress,
-        deliveryMemo: profile.deliveryMemo ?? current.deliveryMemo,
+        recipientName: profile.recipientName,
+        phone: profile.phone,
+        postalCode: profile.postalCode,
+        address: profile.address,
+        detailAddress: profile.detailAddress,
+        deliveryMemo: profile.deliveryMemo,
       }));
       setAddressMode("DEFAULT");
       setAddressMessage("기본 배송지를 불러왔습니다. 이번 주문에서 자유롭게 수정할 수 있습니다.");
-    } catch {
-      localStorage.removeItem("dropdeal_profile");
+    }).catch(() => {
       setAddressMode("NEW");
       setAddressMessage("기본 배송지를 불러오지 못했습니다. 새 배송지를 입력해주세요.");
-    }
+    });
   };
 
   const useNewAddress = () => {

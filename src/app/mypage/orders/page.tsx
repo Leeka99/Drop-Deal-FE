@@ -1,15 +1,9 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { GuestOrdersClient } from "@/components/GuestOrdersClient";
 import { MemberOrdersClient } from "@/components/MemberOrdersClient";
-import { products } from "@/mocks/products";
-
-const orders = [
-  { product: products[0], paid: 27000, final: 24000, state: "공동구매 진행 중", refund: 3000 },
-  { product: products[4], paid: 23000, final: 19000, state: "차액 환불 완료", refund: 4000 },
-  { product: products[7], paid: 16000, final: 14000, state: "배송 중", refund: 2000 },
-];
+import { getSession } from "@/lib/auth";
+import { memberOrderService } from "@/services/memberOrderService";
 
 export default async function OrdersPage() {
   const session = await getSession();
@@ -17,6 +11,8 @@ export default async function OrdersPage() {
   if (!session) {
     return <div className="shell section"><GuestOrdersClient /></div>;
   }
+
+  const orders = await memberOrderService.getOrders();
 
   return (
     <div className="shell section">
@@ -34,3 +30,4 @@ export default async function OrdersPage() {
     </div>
   );
 }
+

@@ -319,6 +319,38 @@ src/
 | Domain | [dropdealkr.com](https://dropdealkr.com) |
 | Planned Backend | Spring Boot, PG·파트너 정산 API |
 
+## 실행 모드 분리
+
+이 프로젝트는 환경변수로 `mock` 모드와 `api` 모드를 전환합니다.
+
+### 로컬 개발
+
+프로젝트 루트에 `.env.local` 파일을 두고 아래처럼 설정합니다.
+
+```env
+NEXT_PUBLIC_API_MODE=mock
+```
+
+로컬에서 `npm run dev`를 실행하면 목업 데이터와 브라우저 저장소 기반 동작을 사용합니다.
+
+### 실제 API 모드
+
+실제 백엔드가 준비되면 환경변수를 바꿉니다.
+
+```env
+NEXT_PUBLIC_API_MODE=api
+NEXT_PUBLIC_API_BASE_URL=https://api.dropdealkr.com
+```
+
+이 모드에서는 상품, 정산, 프로필, 주문 관련 서비스가 백엔드 API를 호출하도록 설계되어 있습니다.
+
+### 운영 원칙
+
+- `mock` 모드는 로컬 개발과 데모용입니다.
+- `api` 모드는 운영 또는 스테이징용입니다.
+- `.env.local`은 Git에 커밋하지 않습니다.
+- Vercel에서는 프로젝트별 환경변수로 모드를 분리합니다.
+
 ---
 
 © 2026 DropDeal. Created by [Leeka99](https://github.com/Leeka99).

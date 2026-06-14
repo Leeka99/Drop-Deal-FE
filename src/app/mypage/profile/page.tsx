@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { profileService } from "@/services/profileService";
 import { findProhibitedWord } from "@/utils/prohibitedText";
 
 const initialProfile = {
@@ -48,8 +49,7 @@ export default function MyProfilePage() {
       setNicknameMessage("닉네임 중복 확인을 완료해야 저장할 수 있습니다.");
       return;
     }
-    localStorage.setItem("dropdeal_profile", JSON.stringify(profile));
-    setSaved(true);
+    void profileService.save(profile).then(() => setSaved(true));
   };
 
   const checkNickname = () => {
@@ -79,16 +79,13 @@ export default function MyProfilePage() {
   };
 
   const load = () => {
-    const savedProfile = localStorage.getItem("dropdeal_profile");
-    if (!savedProfile) return;
-    try {
-      setProfile({ ...initialProfile, ...JSON.parse(savedProfile) });
+    void profileService.getDefaultShippingAddress().then((savedProfile) => {
+      if (!savedProfile) return;
+      setProfile({ ...initialProfile, ...savedProfile });
       setCheckedNickname("");
       setNicknameMessage("저장된 닉네임을 사용하려면 중복 확인을 다시 진행해주세요.");
       setSaved(true);
-    } catch {
-      localStorage.removeItem("dropdeal_profile");
-    }
+    });
   };
 
   return (

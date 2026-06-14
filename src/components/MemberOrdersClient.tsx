@@ -1,27 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Product } from "@/types/product";
+import { memberOrderService } from "@/services/memberOrderService";
+import type { MemberOrder } from "@/services/memberOrderService";
 import { won } from "@/utils/format";
-
-type MemberOrder = {
-  product: Product;
-  paid: number;
-  final: number;
-  state: string;
-  refund: number;
-};
 
 export function MemberOrdersClient({ initialOrders }: { initialOrders: MemberOrder[] }) {
   const [orders, setOrders] = useState(initialOrders);
 
   const cancelOrder = (productId: number) => {
     if (!window.confirm("진행 중인 공동구매 참여를 취소하시겠습니까? 결제 금액은 전액 환불 처리됩니다.")) return;
-    setOrders((current) => current.map((order) => (
-      order.product.id === productId
-        ? { ...order, state: "주문 취소 · 전액 환불 예정", refund: order.paid }
-        : order
-    )));
+    const order = orders.find((current) => current.product.id === productId);
+    if (!order) return;
+    void memberOrderService.cancelOrder(order.id).then(() => {
+      setOrders((current) => current.map((order) => (
+        order.product.id === productId
+          ? { ...order, state: "주문 취소 · 전액 환불 예정", refund: order.paid }
+          : order
+      )));
+    });
   };
 
   return (

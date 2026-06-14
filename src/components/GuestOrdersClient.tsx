@@ -1,60 +1,50 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { guestOrderService } from "@/services/guestOrderService";
+import type { GuestOrder } from "@/services/guestOrderService";
 import { won } from "@/utils/format";
-
-type GuestOrder = {
-  id: string;
-  name: string;
-  phone: string;
-  productName: string;
-  paid: number;
-  state: string;
-};
-
-const normalizePhone = (phone: string) => phone.replace(/\D/g, "");
 
 export function GuestOrdersClient() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [orders, setOrders] = useState<GuestOrder[] | null>(null);
   const [message, setMessage] = useState("");
+  const [guestOrderToken, setGuestOrderToken] = useState("");
 
   const verify = (event: FormEvent) => {
     event.preventDefault();
-    try {
-      const savedOrders = JSON.parse(localStorage.getItem("dropdeal_guest_orders") ?? "[]") as GuestOrder[];
-      const matchedOrders = savedOrders.filter(
-        (order) => order.name.trim() === name.trim() && normalizePhone(order.phone) === normalizePhone(phone),
-      );
-      setOrders(matchedOrders);
-      setMessage(matchedOrders.length ? "" : "인증 정보와 일치하는 비회원 주문을 찾을 수 없습니다.");
-    } catch {
-      localStorage.removeItem("dropdeal_guest_orders");
-      setOrders([]);
-      setMessage("비회원 주문 정보를 확인할 수 없습니다.");
-    }
+    void guestOrderService.verify(name, phone)
+      .then((result) => {
+        if (Array.isArray(result)) {
+          setGuestOrderToken("");
+          setOrders(result);
+          setMessage(result.length ? "" : "인증 정보와 일치하는 비회원 주문을 찾을 수 없습니다.");
+          return;
+        }
+        setGuestOrderToken(result);
+        setMessage("인증이 완료되었습니다. 비회원 주문을 불러오는 중입니다.");
+        void guestOrderService.list(result).then(setOrders).catch(() => setOrders([]));
+      })
+      .catch(() => {
+        setOrders([]);
+        setMessage("비회원 주문 정보를 확인할 수 없습니다.");
+      });
   };
 
   const reset = () => {
     setOrders(null);
     setMessage("");
+    setGuestOrderToken("");
   };
 
   const cancelOrder = (orderId: string) => {
     if (!window.confirm("진행 중인 공동구매 참여를 취소하시겠습니까? 결제 금액은 전액 환불 처리됩니다.")) return;
-    const updatedOrders = (orders ?? []).map((order) => (
-      order.id === orderId ? { ...order, state: "주문 취소 · 전액 환불 예정" } : order
-    ));
-    setOrders(updatedOrders);
-    try {
-      const savedOrders = JSON.parse(localStorage.getItem("dropdeal_guest_orders") ?? "[]") as GuestOrder[];
-      localStorage.setItem("dropdeal_guest_orders", JSON.stringify(savedOrders.map((order) => (
+    void guestOrderService.cancel(orderId, guestOrderToken).then(() => {
+      setOrders((current) => current?.map((order) => (
         order.id === orderId ? { ...order, state: "주문 취소 · 전액 환불 예정" } : order
-      ))));
-    } catch {
-      localStorage.setItem("dropdeal_guest_orders", JSON.stringify(updatedOrders));
-    }
+      )) ?? null);
+    });
   };
 
   if (orders?.length) {
@@ -70,20 +60,22 @@ export function GuestOrdersClient() {
         <div className="order-list">
           {orders.map((order) => {
             const cancellable = order.state === "공동구매 진행 중" || order.state === "신청 완료";
-            return <div className="order" key={order.id}>
-              <div>
-                <span className="badge badge-live">{order.state}</span>
-                <h3>{order.productName}</h3>
-                <div className="order-data">
-                  <div><span>주문 번호</span><b>{order.id}</b></div>
-                  <div><span>결제 금액</span><b>{won(order.paid)}</b></div>
+            return (
+              <div className="order" key={order.id}>
+                <div>
+                  <span className="badge badge-live">{order.state}</span>
+                  <h3>{order.productName}</h3>
+                  <div className="order-data">
+                    <div><span>주문 번호</span><b>{order.id}</b></div>
+                    <div><span>결제 금액</span><b>{won(order.paid)}</b></div>
+                  </div>
+                </div>
+                <div className="order-actions">
+                  <button className="btn btn-soft">상세 보기</button>
+                  {cancellable && <button className="btn btn-primary" type="button" onClick={() => cancelOrder(order.id)}>공동구매 취소하기</button>}
                 </div>
               </div>
-              <div className="order-actions">
-                <button className="btn btn-soft">상세 보기</button>
-                {cancellable && <button className="btn btn-primary" type="button" onClick={() => cancelOrder(order.id)}>공동구매 취소하기</button>}
-              </div>
-            </div>;
+            );
           })}
         </div>
       </>
