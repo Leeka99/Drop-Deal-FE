@@ -56,7 +56,7 @@ export default async function Home() {
           </div>
         </div>
       </section>
-      <section className="section"><div className="shell trust"><div className="trust-brand"><Image src="/brand/mainlogo.png" alt="쇼핑 카트와 가격 하락 화살표를 든 DropDeal 캐릭터" width={126} height={126}/><div><h2>가격이 내려갈수록 환불 금액은 올라갑니다.</h2><p>공동구매 실패 시에는 결제 금액 전액을 자동 환불합니다.</p></div></div><Link className="btn btn-lime" href="/products">안심하고 참여하기</Link></div></section>
+      <section className="section"><div className="shell trust"><div className="trust-brand"><Image src="/brand/mainlogo.png" alt="쇼핑 카트와 가격 하락 화살표를 든 DropDeal 캐릭터" width={126} height={126}/><div><h2>모일수록 가격이 내려갑니다.</h2><p>공동구매 실패 시에는 결제 금액 전액을 자동 환불합니다.</p></div></div><Link className="btn btn-lime" href="/products">구매하러가기</Link></div></section>
     </>
   );
 }

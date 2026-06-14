@@ -17,7 +17,7 @@ export function Header() {
         </div>
         <div className="nav-actions">
           <Link className="btn btn-soft" href="/mypage/coupons">내 쿠폰</Link>
-          <Link className="btn btn-primary" href="/products">가격 내려가기</Link>
+          <Link className="btn btn-primary" href="/products">상품 구매하기</Link>
         </div>
       </nav>
     </header>
