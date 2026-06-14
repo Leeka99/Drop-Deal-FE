@@ -181,6 +181,7 @@ th { color: var(--muted); background: var(--soft); }
 .order-data { display: flex; gap: 25px; flex-wrap: wrap; }
 .order-data span { display: block; font-size: 11px; color: var(--muted); }
 .order-data b { font-size: 13px; }
+.order-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .coupon-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
 .coupon { position: relative; overflow: hidden; min-height: 180px; border: 1px solid var(--line); border-radius: 20px; background: var(--white); padding: 22px; }
 .coupon:after { content:""; position:absolute; width:85px; height:85px; border-radius:50%; background:var(--lime); right:-25px; top:-25px; }

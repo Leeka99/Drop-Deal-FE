@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { GuestOrdersClient } from "@/components/GuestOrdersClient";
+import { MemberOrdersClient } from "@/components/MemberOrdersClient";
 import { products } from "@/mocks/products";
-import { won } from "@/utils/format";
 
 const orders = [
   { product: products[0], paid: 27000, final: 24000, state: "공동구매 진행 중", refund: 3000 },
@@ -30,22 +30,7 @@ export default async function OrdersPage() {
         <button className="filter">환불 완료</button>
         <button className="filter">배송 중</button>
       </div>
-      <div className="order-list">
-        {orders.map(({ product, paid, final, state, refund }) => (
-          <div className="order" key={product.id}>
-            <div>
-              <span className="badge badge-live">{state}</span>
-              <h3>{product.name}</h3>
-              <div className="order-data">
-                <div><span>결제 금액</span><b>{won(paid)}</b></div>
-                <div><span>현재/최종가</span><b>{won(final)}</b></div>
-                <div><span>환불 예정·완료</span><b className="discount">{won(refund)}</b></div>
-              </div>
-            </div>
-            <button className="btn btn-soft">상세 보기</button>
-          </div>
-        ))}
-      </div>
+      <MemberOrdersClient initialOrders={orders} />
     </div>
   );
 }

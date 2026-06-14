@@ -1,5 +1,4 @@
 import { login } from "./actions";
-import Link from "next/link";
 
 export default async function LoginPage({
   searchParams,
@@ -27,7 +26,6 @@ export default async function LoginPage({
           <span>구매자: buyer@dropdeal.kr / buyer123</span>
           <span>승인 판매자: seller@dropdeal.kr / seller123</span>
         </div>
-        <Link className="btn btn-soft" href="/mypage/orders">비회원 주문 조회</Link>
       </section>
     </div>
   );

@@ -205,7 +205,16 @@ export function CheckoutClient({ product, viewerRole, canParticipate }: Props) {
           <div className="section-head" style={{ marginBottom: 14 }}>
             <h3 style={{ margin: 0 }}>{isGuest ? "비회원 배송 정보" : "배송 정보"}</h3>
           </div>
-          {isGuest && <div className="notice" style={{ marginBottom: 14 }}>입력한 주소는 이번 주문의 배송에만 사용되며 회원 배송지로 저장되지 않습니다.</div>}
+          {isGuest && <>
+            <div className="notice" style={{ marginBottom: 14 }}>입력한 주소는 이번 주문의 배송에만 사용되며 회원 배송지로 저장되지 않습니다.</div>
+            <div className="notice" style={{ marginBottom: 14 }}>
+              저장된 배송지를 사용하려면 로그인해주세요. 로그인 후 같은 결제 화면으로 돌아오며, 기본 배송지를 직접 선택해 불러올 수 있습니다.
+              <div style={{ marginTop: 10 }}>
+                <Link className="btn btn-soft" href={`/login?next=${encodeURIComponent(`/products/${product.id}/checkout`)}`}>로그인 후 배송지 가져오기</Link>
+              </div>
+              <small className="auto-policy-help">로그인 전에 입력한 주소는 유지되지 않을 수 있습니다.</small>
+            </div>
+          </>}
           {!isGuest && <div className="reactions" style={{ marginBottom: 14 }}>
             <button className={`reaction ${addressMode === "DEFAULT" ? "selected" : ""}`} type="button" onClick={loadDefaultAddress}>기본 배송지 사용</button>
             <button className={`reaction ${addressMode === "NEW" ? "selected" : ""}`} type="button" onClick={useNewAddress}>새 배송지 입력</button>

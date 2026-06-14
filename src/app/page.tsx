@@ -1,10 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ProductCard } from "@/components/ProductCard";
+import { getSession } from "@/lib/auth";
 import { productService } from "@/services/productService";
 
 export default async function Home() {
-  const products = await productService.getProducts();
+  const [products, session] = await Promise.all([
+    productService.getProducts(),
+    getSession(),
+  ]);
   const openProducts = products.filter((product) => product.status === "OPEN").slice(0, 4);
   const clearance = products.filter((product) => product.type === "CLEARANCE").slice(0, 4);
   return (
@@ -18,6 +22,7 @@ export default async function Home() {
             <div className="hero-actions">
               <Link className="btn btn-primary" href="/products">진행 중인 공동구매</Link>
               <Link className="btn btn-lime" href="/products?type=clearance">재고떨이 특가</Link>
+              {!session && <Link className="btn btn-soft" href="/mypage/orders">비회원 주문 조회</Link>}
             </div>
           </div>
           <div className="brand-hero-visual">

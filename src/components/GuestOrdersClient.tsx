@@ -41,6 +41,22 @@ export function GuestOrdersClient() {
     setMessage("");
   };
 
+  const cancelOrder = (orderId: string) => {
+    if (!window.confirm("진행 중인 공동구매 참여를 취소하시겠습니까? 결제 금액은 전액 환불 처리됩니다.")) return;
+    const updatedOrders = (orders ?? []).map((order) => (
+      order.id === orderId ? { ...order, state: "주문 취소 · 전액 환불 예정" } : order
+    ));
+    setOrders(updatedOrders);
+    try {
+      const savedOrders = JSON.parse(localStorage.getItem("dropdeal_guest_orders") ?? "[]") as GuestOrder[];
+      localStorage.setItem("dropdeal_guest_orders", JSON.stringify(savedOrders.map((order) => (
+        order.id === orderId ? { ...order, state: "주문 취소 · 전액 환불 예정" } : order
+      ))));
+    } catch {
+      localStorage.setItem("dropdeal_guest_orders", JSON.stringify(updatedOrders));
+    }
+  };
+
   if (orders?.length) {
     return (
       <>
@@ -52,8 +68,9 @@ export function GuestOrdersClient() {
           <button className="btn btn-soft" type="button" onClick={reset}>인증 정보 변경</button>
         </div>
         <div className="order-list">
-          {orders.map((order) => (
-            <div className="order" key={order.id}>
+          {orders.map((order) => {
+            const cancellable = order.state === "공동구매 진행 중" || order.state === "신청 완료";
+            return <div className="order" key={order.id}>
               <div>
                 <span className="badge badge-live">{order.state}</span>
                 <h3>{order.productName}</h3>
@@ -62,9 +79,12 @@ export function GuestOrdersClient() {
                   <div><span>결제 금액</span><b>{won(order.paid)}</b></div>
                 </div>
               </div>
-              <button className="btn btn-soft">상세 보기</button>
-            </div>
-          ))}
+              <div className="order-actions">
+                <button className="btn btn-soft">상세 보기</button>
+                {cancellable && <button className="btn btn-primary" type="button" onClick={() => cancelOrder(order.id)}>공동구매 취소하기</button>}
+              </div>
+            </div>;
+          })}
         </div>
       </>
     );
