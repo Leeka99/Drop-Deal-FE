@@ -23,7 +23,7 @@ export function ProductCard({ product }: { product: Product }) {
       <div className={`product-visual ${product.visual}`}>
         <div className="badges">
           {product.type === "CLEARANCE" && <span className="badge badge-clear">재고떨이</span>}
-          {product.couponEvent && <span className="badge badge-event">50% 쿠폰 이벤트</span>}
+          {product.couponEvent && product.couponRate && <span className="badge badge-event">{product.couponRate}% 쿠폰 이벤트</span>}
           {product.status === "OPEN" && <span className="badge badge-live">LIVE</span>}
         </div>
         <span className="visual-icon">{product.icon}</span>

@@ -21,6 +21,7 @@ export type Product = {
   remainingStock: number;
   endAt: string;
   couponEvent: boolean;
+  couponRate?: 3 | 5 | 10 | 15 | 30;
   visual: string;
   icon: string;
   rating: number;

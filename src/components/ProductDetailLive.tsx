@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Product } from "@/types/product";
+import { couponPolicies } from "@/utils/couponPolicy";
 import { discountRate, nextParticipants, nextPrice, won } from "@/utils/format";
 
 const reactionLabels = ["🔥 같이 사요", "💸 더 내려가자", "⏰ 마감 임박", "👀 고민 중", "🎉 가격 좋다", "📦 재고 털자"];
@@ -44,6 +45,7 @@ export function ProductDetailLive({ initialProduct }: { initialProduct: Product 
   const maxParticipantsReached = product.currentParticipants >= product.maxParticipants;
   const maxDiscountReached = product.currentPrice <= product.minPrice;
   const canParticipate = product.status === "OPEN" && !maxParticipantsReached;
+  const couponPolicy = product.couponRate ? couponPolicies[product.couponRate] : null;
 
   const react = (label: string, index: number) => {
     if (selected === label) return;
@@ -59,7 +61,7 @@ export function ProductDetailLive({ initialProduct }: { initialProduct: Product 
         <div>
           <div className="badges" style={{ position:"static" }}>
             {product.type === "CLEARANCE" && <span className="badge badge-clear">재고떨이</span>}
-            {product.couponEvent && <span className="badge badge-event">랜덤 쿠폰 이벤트</span>}
+            {product.couponEvent && product.couponRate && <span className="badge badge-event">{product.couponRate}% 쿠폰 이벤트</span>}
             <span className="badge badge-live">실시간 공동구매</span>
           </div>
           <p className="seller" style={{ marginTop:18 }}>{product.sellerName} · ★ {product.rating} ({product.reviewCount})</p>
@@ -103,7 +105,7 @@ export function ProductDetailLive({ initialProduct }: { initialProduct: Product 
               </div>
             </div>
           </div>
-          {product.couponEvent && <div className="coupon-box" style={{ marginBottom:25 }}><span className="eyebrow">Clearance Lucky Draw</span><h3>공동구매 성공 시 참여자 중 5%에게 50% 할인 쿠폰</h3><p>다음 구매에 사용할 수 있어요. 쿠폰 추첨 조건까지 <b>{couponLeft}명</b> 남았습니다.</p></div>}
+          {product.couponEvent && product.couponRate && couponPolicy && <div className="coupon-box" style={{ marginBottom:25 }}><span className="eyebrow">Coupon event</span><h3>공동구매 성공 시 {product.couponRate}% 할인 쿠폰 이벤트</h3><p>{couponPolicy.target} · 최대 {won(couponPolicy.maxDiscountAmount)} 할인{couponPolicy.issueLimit ? ` · ${couponPolicy.issueLimit}명 한정` : ""}. 쿠폰 이벤트 조건까지 <b>{couponLeft}명</b> 남았습니다.</p></div>}
           <div className="content-grid">
             <div className="panel">
               <h3>판매자 Q&A</h3>

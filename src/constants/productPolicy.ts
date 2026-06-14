@@ -1,7 +1,5 @@
 import { ProductType } from "@/types/product";
 
-export const PLATFORM_COMMISSION_RATE = 0.1;
-
 export const productTypePolicy: Record<ProductType, {
   label: string;
   summary: string;

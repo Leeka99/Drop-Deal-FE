@@ -33,7 +33,7 @@ export default async function SellerSettlementsPage() {
         </div>
         <div className="settlement-stats">
           <div className="stat-card"><span>누적 최종 판매금액</span><strong>{won(totals.gross)}</strong><small>차액 환불 반영 후 기준</small></div>
-          <div className="stat-card"><span>누적 플랫폼 수수료</span><strong>{won(totals.fee)}</strong><small>플랫폼 고정 수수료 10% 적용</small></div>
+          <div className="stat-card"><span>누적 플랫폼 수수료</span><strong>{won(totals.fee)}</strong><small>판매금액별 구간 수수료 적용</small></div>
           <div className="stat-card stat-card-dark"><span>누적 판매자 정산금</span><strong>{won(totals.settlement)}</strong><small>PG 수수료 및 할인 분담금 차감</small></div>
         </div>
         <div className="notice settlement-notice">정산은 차액 환불, 배송 완료, 반품 가능 기간 종료 후 지급됩니다. 보류된 건은 상세 페이지에서 사유를 확인할 수 있습니다.</div>

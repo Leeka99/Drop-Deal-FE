@@ -203,10 +203,30 @@ th { color: var(--muted); background: var(--soft); }
 .form-group.full { grid-column: 1/-1; }
 .form-group textarea { min-height: 110px; resize: vertical; }
 .readonly-field { background: var(--brand-soft); font-weight: 800; }
+.auto-policy-help { color: var(--muted); font-size: 10px; line-height: 1.45; }
+.auto-policy-summary { border: 1px solid var(--accent); border-radius: 14px; background: var(--cream); padding: 14px; }
+.auto-policy-summary strong, .auto-policy-summary span { display: block; }
+.auto-policy-summary span { margin-top: 5px; color: var(--ink); font-size: 11px; line-height: 1.5; }
 .policy-confirm { border: 1px solid var(--brand); border-radius: 14px; background: var(--brand-soft); padding: 14px; }
 .fixed-fee-field { display: flex; align-items: center; gap: 14px; border: 1px solid var(--accent); border-radius: 14px; background: var(--cream); padding: 14px; }
 .fixed-fee-field b { font-size: 24px; }
 .fixed-fee-field span { color: var(--ink); font-size: 11px; }
+.commission-tier-guide { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; }
+.commission-tier-guide span { display: flex; flex-direction: column; gap: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); padding: 9px; color: var(--muted); font-size: 10px; }
+.commission-tier-guide span.active { border-color: var(--accent); background: var(--accent); color: var(--ink); }
+.commission-tier-guide b { color: var(--ink); font-size: 14px; }
+.coupon-policy-box { display: flex; align-items: center; justify-content: space-between; gap: 14px; border: 1px solid var(--brand); border-radius: 16px; background: var(--brand-soft); padding: 16px; }
+.coupon-policy-box strong { display: block; margin-top: 4px; font-size: 17px; }
+.coupon-policy-box p { margin: 5px 0 0; color: var(--ink); font-size: 11px; }
+.coupon-policy-limit { flex-shrink: 0; border-radius: 12px; background: var(--white); padding: 10px 12px; text-align: right; }
+.coupon-policy-limit span, .coupon-policy-limit small { display: block; color: var(--muted); font-size: 9px; }
+.coupon-policy-limit b { display: block; margin: 2px 0; }
+.coupon-rate-guide { display: grid; grid-template-columns: repeat(5,1fr); gap: 7px; }
+.coupon-rate-guide span { display: flex; flex-direction: column; gap: 5px; border: 1px solid var(--line); border-radius: 11px; background: var(--white); padding: 10px; }
+.coupon-rate-guide span.active { border-color: var(--accent); background: var(--accent); }
+.coupon-rate-guide b { font-size: 18px; }
+.coupon-rate-guide small { min-height: 44px; color: var(--ink); font-size: 9px; line-height: 1.45; }
+.coupon-rate-guide em { color: var(--muted); font-size: 9px; font-style: normal; }
 .policy-preview { background: linear-gradient(145deg,var(--ink),var(--brand-dark)); color: var(--white); border-radius: 20px; padding: 22px; }
 .policy-step { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.1); font-size: 12px; }
 .estimate-box { margin-top: 25px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.18); }
@@ -266,6 +286,9 @@ th { color: var(--muted); background: var(--soft); }
   .live-stage-overlay .stage-price strong { display: block; margin: 5px 0; font-size: 28px; }
   .trust-brand { align-items: flex-start; flex-direction: column; }
   .selected-policy { flex-direction: column; }
+  .commission-tier-guide { grid-template-columns: repeat(2,1fr); }
+  .coupon-rate-guide { grid-template-columns: repeat(2,1fr); }
+  .coupon-policy-box { align-items: flex-start; flex-direction: column; }
   .product-grid, .steps, .coupon-grid, .form-grid, .settlement-stats { grid-template-columns: 1fr; }
   .trust, .section-head, .footer-inner { align-items: flex-start; flex-direction: column; }
   .detail-stat-grid { grid-template-columns: 1fr 1fr; }
