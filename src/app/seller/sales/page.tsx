@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { SellerNav } from "@/components/SellerNav";
-import { products } from "@/mocks/products";
+import { productService } from "@/services/productService";
 import { calculateSettlement, platformCommissionRate } from "@/utils/settlement";
 import { won } from "@/utils/format";
 
-const sales = products.slice(0, 6).map((product, index) => {
+const createSales = (products: Awaited<ReturnType<typeof productService.getProducts>>) => products.slice(0, 6).map((product, index) => {
   const grossAmount = product.currentPrice * product.currentParticipants;
   const commissionRate = product.type === "FREE_GIVEAWAY" ? 0 : platformCommissionRate(grossAmount);
   const settlement = calculateSettlement(grossAmount, commissionRate);
@@ -21,7 +21,8 @@ const sales = products.slice(0, 6).map((product, index) => {
   };
 });
 
-export default function SellerSalesPage() {
+export default async function SellerSalesPage() {
+  const sales = createSales(await productService.getProducts());
   const totalGross = sales.reduce((sum, item) => sum + item.grossAmount, 0);
   const totalCommission = sales.reduce((sum, item) => sum + item.settlement.platformFee, 0);
   const totalSettlement = sales.reduce((sum, item) => sum + item.settlement.settlementAmount, 0);

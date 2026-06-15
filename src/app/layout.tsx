@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Image from "next/image";
 import { Header } from "@/components/Header";
+import { MockProvider } from "@/components/MockProvider";
 import { PwaRegister } from "@/components/PwaRegister";
 import "./globals.css";
 
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <PwaRegister />
         <Header />
-        <main>{children}</main>
+        <MockProvider><main>{children}</main></MockProvider>
         <footer className="footer">
           <div className="shell footer-inner">
             <div>

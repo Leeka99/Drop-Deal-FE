@@ -1,4 +1,4 @@
-import { isMockMode, requestJson } from "@/services/index";
+import { requestJson } from "@/services/index";
 
 export type ShippingAddress = {
   recipientName: string;
@@ -32,11 +32,6 @@ const readProfile = (): ShippingAddress | null => {
   }
 };
 
-const writeProfile = (profile: ShippingAddress) => {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(storageKey, JSON.stringify(profile));
-};
-
 const clearProfile = () => {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(storageKey);
@@ -44,14 +39,9 @@ const clearProfile = () => {
 
 export const profileService = {
   async getDefaultShippingAddress() {
-    if (isMockMode()) return readProfile();
     return requestJson<{ data: ShippingAddress | null }>("/api/v1/me/profile").then((response) => response.data);
   },
   async save(profile: ShippingAddress) {
-    if (isMockMode()) {
-      writeProfile(profile);
-      return profile;
-    }
     return requestJson<{ data: ShippingAddress }>("/api/v1/me/profile", {
       method: "PUT",
       body: JSON.stringify(profile),
@@ -64,4 +54,3 @@ export const profileService = {
     clearProfile();
   },
 };
-
