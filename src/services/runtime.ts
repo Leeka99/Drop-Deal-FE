@@ -1,8 +1,8 @@
-export type DataMode = "mock" | "api";
+export type DataMode = "mock" | "prod";
 
 export const getDataMode = (): DataMode => {
   const mode = process.env.NEXT_PUBLIC_API_MODE?.toLowerCase();
-  return mode === "api" ? "api" : "mock";
+  return mode === "prod" ? "prod" : "mock";
 };
 
 export const isMockMode = () => getDataMode() === "mock";

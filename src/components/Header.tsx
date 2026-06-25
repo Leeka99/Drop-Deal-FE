@@ -35,7 +35,7 @@ export async function Header() {
             : <Link className="btn btn-soft" href="/login">로그인</Link>}
           {isSeller
             ? <Link className="btn btn-primary" href="/seller/products">판매자 센터</Link>
-            : <Link className="btn btn-primary" href="/products">상품 구경하기</Link>}
+            : <Link className="btn btn-primary" href="/products">상품 구매하기</Link>}
         </div>
       </nav>
     </header>
