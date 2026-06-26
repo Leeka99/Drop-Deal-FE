@@ -1,6 +1,7 @@
 import { ProductDetailLive } from "@/components/ProductDetailLive";
 import { getSession } from "@/lib/auth";
 import { productService } from "@/services/productService";
+import { isMockMode } from "@/services/runtime";
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -9,5 +10,5 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     getSession(),
   ]);
 
-  return <ProductDetailLive initialProduct={product} viewerRole={session?.role} />;
+  return <ProductDetailLive initialProduct={product} viewerRole={session?.role} enableMockLiveUpdates={isMockMode()} />;
 }

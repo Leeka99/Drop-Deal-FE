@@ -25,9 +25,10 @@ const initialFeeds = [
 type Props = {
   initialProduct: Product;
   viewerRole?: "buyer" | "seller";
+  enableMockLiveUpdates?: boolean;
 };
 
-export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
+export function ProductDetailLive({ initialProduct, viewerRole, enableMockLiveUpdates = false }: Props) {
   const [product, setProduct] = useState(initialProduct);
   const [feeds, setFeeds] = useState(initialFeeds);
   const [selected, setSelected] = useState("");
@@ -35,6 +36,8 @@ export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
   const [question, setQuestion] = useState("");
 
   useEffect(() => {
+    if (!enableMockLiveUpdates) return;
+
     const timer = setInterval(() => {
       setProduct((prev) => {
         if (prev.status !== "OPEN" || prev.currentParticipants >= prev.maxParticipants) return prev;
@@ -71,7 +74,7 @@ export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
     }, 9000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [enableMockLiveUpdates]);
 
   const isSeller = viewerRole === "seller";
   const isGiveaway = product.type === "FREE_GIVEAWAY";

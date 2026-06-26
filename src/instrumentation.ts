@@ -1,5 +1,7 @@
+import { isMockMode } from "@/services/runtime";
+
 export async function register() {
-  if (process.env.NEXT_RUNTIME === "nodejs" && process.env.NEXT_PUBLIC_API_MODE !== "prod") {
+  if (process.env.NEXT_RUNTIME === "nodejs" && isMockMode()) {
     const { server } = await import("@/mocks/node");
     server.listen({ onUnhandledRequest: "bypass" });
   }
