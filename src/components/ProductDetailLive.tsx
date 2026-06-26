@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Product } from "@/types/product";
 import { couponPolicies, couponWinnerCount } from "@/utils/couponPolicy";
 import { discountRate, nextParticipants, nextPrice, won } from "@/utils/format";
@@ -25,56 +25,15 @@ const initialFeeds = [
 type Props = {
   initialProduct: Product;
   viewerRole?: "buyer" | "seller";
-  enableMockLiveUpdates?: boolean;
 };
 
-export function ProductDetailLive({ initialProduct, viewerRole, enableMockLiveUpdates = false }: Props) {
-  const [product, setProduct] = useState(initialProduct);
+export function ProductDetailLive({ initialProduct, viewerRole }: Props) {
+  const product = initialProduct;
   const [feeds, setFeeds] = useState(initialFeeds);
   const [selected, setSelected] = useState("");
   const [counts, setCounts] = useState([24, 18, 7, 11, 15, 9]);
   const [question, setQuestion] = useState("");
 
-  useEffect(() => {
-    if (!enableMockLiveUpdates) return;
-
-    const timer = setInterval(() => {
-      setProduct((prev) => {
-        if (prev.status !== "OPEN" || prev.currentParticipants >= prev.maxParticipants) return prev;
-        const participants = prev.currentParticipants + 1;
-        const isClearance = prev.type === "CLEARANCE";
-        const isGiveaway = prev.type === "FREE_GIVEAWAY";
-        const startsDiscount = !isClearance && !isGiveaway && participants === prev.minParticipants;
-        const shouldDrop =
-          isGiveaway
-            ? false
-            : isClearance
-            ? participants === prev.discountStepParticipants
-            : participants > prev.minParticipants &&
-              (participants - prev.minParticipants) % prev.discountStepParticipants === 0;
-        const price = isClearance
-          ? shouldDrop ? prev.minPrice : prev.currentPrice
-          : startsDiscount
-          ? prev.startPrice
-          : shouldDrop
-            ? Math.max(prev.minPrice, prev.currentPrice - prev.discountStepAmount)
-            : prev.currentPrice;
-
-        setFeeds((old) => [
-          shouldDrop ? `현재 가격이 ${won(price)}으로 내려갔어요.` : "새로운 참여자가 공동구매에 참여했어요.",
-          ...old.slice(0, 5),
-        ]);
-
-        return {
-          ...prev,
-          currentParticipants: participants,
-          currentPrice: price,
-        };
-      });
-    }, 9000);
-
-    return () => clearInterval(timer);
-  }, [enableMockLiveUpdates]);
 
   const isSeller = viewerRole === "seller";
   const isGiveaway = product.type === "FREE_GIVEAWAY";

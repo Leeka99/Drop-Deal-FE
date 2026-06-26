@@ -254,12 +254,12 @@ flowchart LR
     R --> CP[Client Components]
 
     SP --> PS[productService]
-    PS --> MD[Mock Product Data]
+    PS --> API[Backend API]
 
     CP --> UI[실시간 참여 UI]
     CP --> PAY[결제·폼 인터랙션]
 
-    MD --> PT[Product Types]
+    API --> PT[Product Types]
     PT --> SP
     PT --> CP
 
@@ -267,7 +267,7 @@ flowchart LR
     CP --> V
 ```
 
-현재 프론트엔드는 `productService`가 비동기 API 호출을 모사하고, `src/mocks/products.ts`의 Mock 데이터를 반환하는 구조입니다. 실제 백엔드 연동 시 서비스 계층의 구현을 API 요청으로 교체할 수 있습니다.
+현재 프론트엔드는 `productService`를 통해 백엔드 API에서 상품 데이터를 조회합니다. 운영 화면의 상품 데이터는 프론트 정적 값이나 mock 데이터가 아니라 백엔드 응답을 기준으로 렌더링합니다.
 
 ### 운영 아키텍처 확장 계획
 
@@ -295,7 +295,7 @@ src/
 │  └─ seller/              # 판매자 상품 관리·등록
 ├─ components/             # 공통 UI 및 상품 실시간 상세 컴포넌트
 ├─ services/               # 데이터 접근 서비스 계층
-├─ mocks/                  # 개발용 Mock 상품 데이터
+├─ mocks/                  # 레거시 mock 파일(런타임 미사용)
 ├─ types/                  # 공통 TypeScript 타입
 └─ utils/                  # 가격 표시 및 계산 유틸리티
 ```
@@ -313,43 +313,31 @@ src/
 | Framework | Next.js 16 App Router |
 | UI | React 19, CSS, Tailwind CSS 4 |
 | Language | TypeScript |
-| Data | Mock Data, Service Layer |
+| Data | Backend API, Service Layer |
 | Code Quality | ESLint |
 | Deployment | Vercel |
 | Domain | [dropdealkr.com](https://dropdealkr.com) |
 | Planned Backend | Spring Boot, PG·파트너 정산 API |
 
-## 실행 모드 분리
+## 실행 모드
 
-이 프로젝트는 환경변수로 `mock` 모드와 `api` 모드를 전환합니다.
+이 프로젝트는 운영 백엔드 API를 사용하는 `prod` 모드만 지원합니다.
 
-### 로컬 개발
-
-프로젝트 루트에 `.env.local` 파일을 두고 아래처럼 설정합니다.
+프로젝트 루트 또는 배포 환경에 아래처럼 설정합니다.
 
 ```env
-NEXT_PUBLIC_API_MODE=mock
-```
-
-로컬에서 `npm run dev`를 실행하면 목업 데이터와 브라우저 저장소 기반 동작을 사용합니다.
-
-### 실제 API 모드
-
-실제 백엔드가 준비되면 환경변수를 바꿉니다.
-
-```env
-NEXT_PUBLIC_API_MODE=api
+NEXT_PUBLIC_API_MODE=prod
 NEXT_PUBLIC_API_BASE_URL=https://api.dropdealkr.com
 ```
 
-이 모드에서는 상품, 정산, 프로필, 주문 관련 서비스가 백엔드 API를 호출하도록 설계되어 있습니다.
+상품, 정산, 프로필, 주문 관련 서비스는 백엔드 API를 호출합니다. 백엔드 요청이 실패하면 mock 데이터로 대체하지 않고 요청 오류를 그대로 처리합니다.
 
 ### 운영 원칙
 
-- `mock` 모드는 로컬 개발과 데모용입니다.
-- `api` 모드는 운영 또는 스테이징용입니다.
+- `NEXT_PUBLIC_API_MODE`는 `prod`만 사용합니다.
+- mock 데이터는 운영 런타임에서 사용하지 않습니다.
 - `.env.local`은 Git에 커밋하지 않습니다.
-- Vercel에서는 프로젝트별 환경변수로 모드를 분리합니다.
+- Vercel 환경변수도 `prod`와 실제 백엔드 API 주소만 설정합니다.
 
 ---
 
