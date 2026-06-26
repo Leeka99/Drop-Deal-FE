@@ -295,7 +295,7 @@ src/
 │  └─ seller/              # 판매자 상품 관리·등록
 ├─ components/             # 공통 UI 및 상품 실시간 상세 컴포넌트
 ├─ services/               # 데이터 접근 서비스 계층
-├─ mocks/                  # 레거시 mock 파일(런타임 미사용)
+├─ mocks/                  # mock 서버 전용 데이터
 ├─ types/                  # 공통 TypeScript 타입
 └─ utils/                  # 가격 표시 및 계산 유틸리티
 ```
@@ -321,23 +321,35 @@ src/
 
 ## 실행 모드
 
-이 프로젝트는 운영 백엔드 API를 사용하는 `prod` 모드만 지원합니다.
+이 프로젝트는 운영용 `prod` 모드와 mock 서버 전용 `mock` 모드를 구분합니다.
 
-프로젝트 루트 또는 배포 환경에 아래처럼 설정합니다.
+### 운영/프로덕션
+
+운영 배포 환경에는 아래처럼 설정합니다.
 
 ```env
 NEXT_PUBLIC_API_MODE=prod
 NEXT_PUBLIC_API_BASE_URL=https://api.dropdealkr.com
 ```
 
-상품, 정산, 프로필, 주문 관련 서비스는 백엔드 API를 호출합니다. 백엔드 요청이 실패하면 mock 데이터로 대체하지 않고 요청 오류를 그대로 처리합니다.
+`prod` 모드에서는 상품, 정산, 프로필, 주문 관련 서비스가 백엔드 API만 호출합니다. 백엔드 요청이 실패하거나 데이터가 없으면 mock 데이터로 대체하지 않습니다.
+
+### Mock 서버
+
+mock 서버를 사용할 때만 아래처럼 설정합니다.
+
+```env
+NEXT_PUBLIC_API_MODE=mock
+```
+
+`mock` 모드에서는 MSW mock 서버가 `src/mocks/*` 데이터를 반환합니다.
 
 ### 운영 원칙
 
-- `NEXT_PUBLIC_API_MODE`는 `prod`만 사용합니다.
-- mock 데이터는 운영 런타임에서 사용하지 않습니다.
+- 실제 prod 프론트 서버는 `NEXT_PUBLIC_API_MODE=prod`만 사용합니다.
+- mock 데이터는 `NEXT_PUBLIC_API_MODE=mock`인 mock 서버에서만 사용합니다.
 - `.env.local`은 Git에 커밋하지 않습니다.
-- Vercel 환경변수도 `prod`와 실제 백엔드 API 주소만 설정합니다.
+- Vercel 운영 환경변수는 `prod`와 실제 백엔드 API 주소만 설정합니다.
 
 ---
 

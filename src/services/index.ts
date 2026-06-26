@@ -1,2 +1,2 @@
-export { getApiBaseUrl, getDataMode, resolveApiUrl } from "@/services/runtime";
+export { getApiBaseUrl, getDataMode, isMockMode, resolveApiUrl } from "@/services/runtime";
 export { requestJson } from "@/services/http";
