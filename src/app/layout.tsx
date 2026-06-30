@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Header } from "@/components/Header";
 import { MockProvider } from "@/components/MockProvider";
 import { PwaRegister } from "@/components/PwaRegister";
+import { isMockMode } from "@/services/runtime";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -33,7 +34,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body>
+      <body className={isMockMode() ? "mock-mode" : undefined}>
         <PwaRegister />
         <Header />
         <MockProvider><main>{children}</main></MockProvider>
