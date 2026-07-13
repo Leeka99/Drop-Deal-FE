@@ -8,6 +8,11 @@ import type { ShippingAddress } from "@/services/profileService";
 const guestOrdersKey = "dropdeal_guest_orders";
 const profileKey = "dropdeal_profile";
 
+const demoAccounts = {
+  'buyer@dropdeal.kr': { password: 'buyer123', role: 'buyer', name: '구매자 데모' },
+  'seller@dropdeal.kr': { password: 'seller123', role: 'seller', name: '승인 판매자 데모' },
+} as const;
+
 let serverGuestOrders: GuestOrder[] = [];
 let serverProfile: ShippingAddress | null = null;
 
@@ -50,6 +55,19 @@ const writeProfile = (profile: ShippingAddress) => {
 const normalizePhone = (phone: string) => phone.replace(/\D/g, "");
 
 export const handlers = [
+  http.post('*/api/v1/auth/login', async ({ request }) => {
+    const credentials = await request.json() as { email?: string; password?: string };
+    const email = credentials.email?.trim().toLowerCase() ?? '';
+    const account = demoAccounts[email as keyof typeof demoAccounts];
+
+    if (!account || account.password !== credentials.password) {
+      return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+    }
+
+    return HttpResponse.json({
+      data: { role: account.role, name: account.name },
+    });
+  }),
   http.get("*/api/v1/products", ({ request }) => {
     const type = new URL(request.url).searchParams.get("type");
     return HttpResponse.json({ data: type ? products.filter((product) => product.type === type) : products });
