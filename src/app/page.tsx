@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { EmptyProducts } from "@/components/EmptyProducts";
 import { ProductCard } from "@/components/ProductCard";
 import { getSession } from "@/lib/auth";
 import { productService } from "@/services/productService";
@@ -9,6 +10,11 @@ export default async function Home() {
     productService.getProducts(),
     getSession(),
   ]);
+
+  if (products.length === 0) {
+    return <EmptyProducts />;
+  }
+
   const openProducts = products.filter((product) => product.status === "OPEN").slice(0, 4);
   const clearance = products.filter((product) => product.type === "CLEARANCE").slice(0, 4);
   return (

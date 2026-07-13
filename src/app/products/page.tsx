@@ -1,3 +1,4 @@
+import { EmptyProducts } from "@/components/EmptyProducts";
 import { ProductCard } from "@/components/ProductCard";
 import { productService } from "@/services/productService";
 
@@ -9,6 +10,11 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     : query.type === "free"
       ? allProducts.filter((p) => p.type === "FREE_GIVEAWAY")
       : allProducts;
+
+  if (products.length === 0) {
+    return <EmptyProducts />;
+  }
+
   return (
     <div className="shell">
       <div className="page-hero"><span className="eyebrow">Explore deals</span><h1 className="page-title">함께 구매하세요</h1><p className="page-lead">참여자가 많아질수록 가격은 더 낮아집니다.</p></div>
