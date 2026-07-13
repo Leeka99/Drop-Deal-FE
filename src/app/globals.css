@@ -75,6 +75,8 @@ button { cursor: pointer; }
 .section-head h2, .page-title { margin: 5px 0; font-size: 30px; letter-spacing: -1.5px; }
 .section-head p, .page-lead { color: var(--muted); margin: 6px 0 0; }
 .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.empty-products { display: grid; min-height: 160px; place-items: center; border: 1px dashed var(--line); border-radius: 20px; background: rgba(255,255,255,.55); color: var(--muted); text-align: center; }
+.empty-products p { margin: 0; font-size: 16px; font-weight: 800; }
 .product-card { overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: var(--white); transition: .25s; }
 .product-card:hover { transform: translateY(-5px); border-color: var(--brand); box-shadow: 0 16px 40px rgba(47,47,47,.12); }
 .product-visual { height: 190px; padding: 14px; display: flex; align-items: end; position: relative; }

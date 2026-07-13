@@ -11,10 +11,6 @@ export default async function Home() {
     getSession(),
   ]);
 
-  if (products.length === 0) {
-    return <EmptyProducts />;
-  }
-
   const openProducts = products.filter((product) => product.status === "OPEN").slice(0, 4);
   const clearance = products.filter((product) => product.type === "CLEARANCE").slice(0, 4);
   return (
@@ -46,14 +42,18 @@ export default async function Home() {
       <section className="section">
         <div className="shell">
           <div className="section-head"><div><span className="eyebrow">Dropping now</span><h2>지금 가격이 내려가는 중</h2><p>다음 참여자가 가격을 바꿀 수 있어요.</p></div><Link className="btn btn-soft" href="/products">전체 보기</Link></div>
-          <div className="product-grid">{openProducts.map((product) => <ProductCard key={product.id} product={product}/>)}</div>
+          {openProducts.length > 0
+            ? <div className="product-grid">{openProducts.map((product) => <ProductCard key={product.id} product={product}/>)}</div>
+            : <EmptyProducts />}
         </div>
       </section>
 
       <section className="section section-soft">
         <div className="shell">
           <div className="section-head"><div><span className="eyebrow">Clearance deal</span><h2>재고가 많을수록 할인은 더 크게</h2><p>좋은 상품의 마지막 재고를 함께 가장 낮은 가격으로.</p></div><Link className="btn btn-soft" href="/products?type=clearance">특가 전체 보기</Link></div>
-          <div className="product-grid">{clearance.map((product) => <ProductCard key={product.id} product={product}/>)}</div>
+          {clearance.length > 0
+            ? <div className="product-grid">{clearance.map((product) => <ProductCard key={product.id} product={product}/>)}</div>
+            : <EmptyProducts />}
         </div>
       </section>
 
